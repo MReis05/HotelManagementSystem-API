@@ -1,5 +1,8 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class Address {
 
 	private String cep;

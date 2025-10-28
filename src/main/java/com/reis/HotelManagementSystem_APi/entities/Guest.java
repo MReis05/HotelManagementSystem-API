@@ -1,8 +1,9 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,14 +21,15 @@ public class Guest {
 	private String cpf;
 	private String email;
 	private String phone;
-	private Date birthDate;
+	private LocalDate birthDate;
 	
+	@Embedded
 	private Address address;
 	
 	public Guest() {
 	}
 
-	public Guest(Long id, String name, String cpf, String email, String phone, Date birthDate, Address address) {
+	public Guest(Long id, String name, String cpf, String email, String phone, LocalDate birthDate, Address address) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -78,11 +80,11 @@ public class Guest {
 		this.phone = phone;
 	}
 
-	public Date getBirthDate() {
+	public LocalDate getBirthDate() {
 		return birthDate;
 	}
 
-	public void setBirthDate(Date birthDate) {
+	public void setBirthDate(LocalDate birthDate) {
 		this.birthDate = birthDate;
 	}
 
