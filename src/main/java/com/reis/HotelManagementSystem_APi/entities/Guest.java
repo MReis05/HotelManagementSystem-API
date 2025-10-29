@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="tb_Guest")
+@Table(name="tb_guest")
 public class Guest {
 
 	@Id
