@@ -29,9 +29,8 @@ public class Guest {
 	public Guest() {
 	}
 
-	public Guest(Long id, String name, String cpf, String email, String phone, LocalDate birthDate, Address address) {
+	public Guest(String name, String cpf, String email, String phone, LocalDate birthDate, Address address) {
 		super();
-		this.id = id;
 		this.name = name;
 		this.cpf = cpf;
 		this.email = email;
@@ -39,13 +38,9 @@ public class Guest {
 		this.birthDate = birthDate;
 		this.address = address;
 	}
-
+	
 	public Long getId() {
 		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getName() {
