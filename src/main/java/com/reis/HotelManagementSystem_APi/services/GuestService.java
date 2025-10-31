@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.reis.HotelManagementSystem_APi.entities.Address;
@@ -11,6 +12,10 @@ import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.entities.dto.AddressDTO;
 import com.reis.HotelManagementSystem_APi.entities.dto.GuestRequestDTO;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
+import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class GuestService {
@@ -25,7 +30,7 @@ public class GuestService {
 
 	public Guest findById(Long id) {
 		Optional<Guest> obj = repository.findById(id);
-		return obj.orElseThrow();
+		return obj.orElseThrow(() -> new ResourceNotFoundException(id));
 	}
 
 	public Guest insert(GuestRequestDTO dto) {
@@ -36,11 +41,19 @@ public class GuestService {
 	}
 
 	public void delete(Long id) {
-		repository.deleteById(id);
+		try {
+			repository.deleteById(id);
+		}
+		catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException(id);
+		}
+		catch (DataIntegrityViolationException e) {
+			throw new DatabaseException(e.getMessage());
+		}
 	}
 
 	public Guest update(Long id, GuestRequestDTO dto) {
-		Guest obj = repository.findById(id).orElseThrow();
+		Guest obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 
 		updateData(dto, obj);
 
