@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -12,8 +13,9 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="tb_guest")
-public class Guest {
-
+public class Guest implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
