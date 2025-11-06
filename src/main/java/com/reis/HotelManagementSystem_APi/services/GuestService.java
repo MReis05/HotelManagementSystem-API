@@ -15,8 +15,6 @@ import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @Service
 public class GuestService {
 
@@ -41,11 +39,13 @@ public class GuestService {
 	}
 
 	public void delete(Long id) {
+		
+		if(!repository.existsById(id)) {
+			throw new ResourceNotFoundException(id);
+		}
+		
 		try {
 			repository.deleteById(id);
-		}
-		catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException(id);
 		}
 		catch (DataIntegrityViolationException e) {
 			throw new DatabaseException(e.getMessage());

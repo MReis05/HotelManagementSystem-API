@@ -2,9 +2,11 @@ package com.reis.HotelManagementSystem_APi.entities.dto;
 
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 
+import jakarta.validation.constraints.Positive;
+
 public class RoomUpdateDTO {
 	
-	
+	@Positive
 	private Double pricePerNight;
 	private String description;
 	private RoomStatus status;
