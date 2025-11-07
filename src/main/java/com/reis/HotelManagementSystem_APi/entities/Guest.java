@@ -2,13 +2,18 @@ package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -27,6 +32,10 @@ public class Guest implements Serializable {
 	
 	@Embedded
 	private Address address;
+	
+	@JsonIgnore
+	@OneToMany(mappedBy = "guest")
+	private List<Reservation> reservation = new ArrayList<>();
 	
 	public Guest() {
 	}
@@ -91,6 +100,10 @@ public class Guest implements Serializable {
 
 	public void setAddress(Address address) {
 		this.address = address;
+	}
+	
+	public List<Reservation> getReservation() {
+		return reservation;
 	}
 
 	@Override

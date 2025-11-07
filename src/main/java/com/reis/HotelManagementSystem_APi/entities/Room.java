@@ -1,8 +1,11 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 
@@ -12,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -29,6 +33,10 @@ public class Room implements Serializable{
 	private RoomStatus status;
 	@Enumerated(EnumType.STRING)
 	private RoomType type;
+	
+	@JsonIgnore
+	@OneToMany(mappedBy = "room")
+	private List<Reservation> reservation = new ArrayList<>();
 	
 	public Room() {
 	}
@@ -84,6 +92,10 @@ public class Room implements Serializable{
 
 	public void setType(RoomType type) {
 		this.type = type;
+	}
+
+	public List<Reservation> getReservation() {
+		return reservation;
 	}
 
 	@Override
