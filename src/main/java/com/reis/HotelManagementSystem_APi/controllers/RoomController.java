@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.reis.HotelManagementSystem_APi.dto.RoomCreateDTO;
+import com.reis.HotelManagementSystem_APi.dto.RoomResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.entities.Room;
-import com.reis.HotelManagementSystem_APi.entities.dto.RoomCreateDTO;
-import com.reis.HotelManagementSystem_APi.entities.dto.RoomResponseDTO;
-import com.reis.HotelManagementSystem_APi.entities.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.services.RoomService;
 
 import jakarta.validation.Valid;

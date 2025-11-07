@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.reis.HotelManagementSystem_APi.dto.GuestRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
-import com.reis.HotelManagementSystem_APi.entities.dto.GuestRequestDTO;
-import com.reis.HotelManagementSystem_APi.entities.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.services.GuestService;
 
 import jakarta.validation.Valid;

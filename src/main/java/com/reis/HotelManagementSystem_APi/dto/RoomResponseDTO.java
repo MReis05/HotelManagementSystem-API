@@ -1,37 +1,37 @@
-package com.reis.HotelManagementSystem_APi.entities.dto;
+package com.reis.HotelManagementSystem_APi.dto;
 
+import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+public class RoomResponseDTO {
 
-public class RoomCreateDTO {
-
-	@NotNull
-	@Positive
+	
+	private Long id;
 	private Integer number;
-	@NotNull
-	@Positive
 	private Double pricePerNight;
-	@NotBlank
 	private String description;
-	@NotNull
 	private RoomStatus status;
-	@NotNull
 	private RoomType type;
 	
-	public RoomCreateDTO() {
+	public RoomResponseDTO() {
+	}
+	
+	public RoomResponseDTO(Room room) {
+		this.id = room.getId();
+		this.number = room.getNumber();
+		this.pricePerNight = room.getPricePerNight();
+		this.description = room.getDescription();
+		this.status = room.getStatus();
+		this.type = room.getType();
 	}
 
-	public RoomCreateDTO(Integer number, Double pricePerNight, String description, RoomStatus status, RoomType type) {
-		super();
-		this.number = number;
-		this.pricePerNight = pricePerNight;
-		this.description = description;
-		this.status = status;
-		this.type = type;
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Integer getNumber() {

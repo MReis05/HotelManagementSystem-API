@@ -26,7 +26,7 @@ public class Reservation implements Serializable {
 	private Long id;
 	private LocalDate checkInDate;
 	private LocalDate checkOutDate;
-	private Double TotalValue;
+	private Double totalValue;
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
 	
@@ -73,11 +73,11 @@ public class Reservation implements Serializable {
 	}
 
 	public Double getTotalValue() {
-		return TotalValue;
+		return totalValue;
 	}
 
 	public void setTotalValue(Double totalValue) {
-		TotalValue = totalValue;
+		this.totalValue = totalValue;
 	}
 
 	public ReservationStatus getStatus() {

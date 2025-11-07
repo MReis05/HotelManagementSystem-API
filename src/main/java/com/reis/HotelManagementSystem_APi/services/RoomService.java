@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.reis.HotelManagementSystem_APi.dto.RoomCreateDTO;
+import com.reis.HotelManagementSystem_APi.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.entities.Room;
-import com.reis.HotelManagementSystem_APi.entities.dto.RoomCreateDTO;
-import com.reis.HotelManagementSystem_APi.entities.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;

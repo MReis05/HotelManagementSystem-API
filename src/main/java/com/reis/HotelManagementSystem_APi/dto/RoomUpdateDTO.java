@@ -1,4 +1,4 @@
-package com.reis.HotelManagementSystem_APi.entities.dto;
+package com.reis.HotelManagementSystem_APi.dto;
 
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 

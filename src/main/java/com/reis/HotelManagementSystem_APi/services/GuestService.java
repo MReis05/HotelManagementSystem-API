@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.reis.HotelManagementSystem_APi.dto.AddressDTO;
+import com.reis.HotelManagementSystem_APi.dto.GuestRequestDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
-import com.reis.HotelManagementSystem_APi.entities.dto.AddressDTO;
-import com.reis.HotelManagementSystem_APi.entities.dto.GuestRequestDTO;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
