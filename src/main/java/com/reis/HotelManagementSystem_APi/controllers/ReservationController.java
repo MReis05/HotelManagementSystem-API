@@ -9,53 +9,43 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.reis.HotelManagementSystem_APi.dto.RoomCreateDTO;
-import com.reis.HotelManagementSystem_APi.dto.RoomResponseDTO;
-import com.reis.HotelManagementSystem_APi.dto.RoomUpdateDTO;
-import com.reis.HotelManagementSystem_APi.services.RoomService;
-
-import jakarta.validation.Valid;
+import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.ReservationResponseDTO;
+import com.reis.HotelManagementSystem_APi.services.ReservationService;
 
 @RestController
-@RequestMapping(value = "/room")
-public class RoomController {
+@RequestMapping(value = "/reservation")
+public class ReservationController {
 
 	@Autowired
-	private RoomService service;
+	private ReservationService service;
 	
 	@GetMapping
-	public ResponseEntity<List<RoomResponseDTO>> findAll(){
-		List<RoomResponseDTO> dto = service.findAll();
+	public ResponseEntity<List<ReservationResponseDTO>> findAll(){
+		List<ReservationResponseDTO> dto = service.findAll();
 		return ResponseEntity.ok().body(dto);
 	}
 	
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<RoomResponseDTO> findById(@PathVariable Long id){
-		RoomResponseDTO dto = service.findById(id);
+	public ResponseEntity<ReservationResponseDTO> findById (@PathVariable Long id){
+		ReservationResponseDTO dto = service.findById(id);
 		return ResponseEntity.ok().body(dto);
 	}
 	
 	@PostMapping
-	public ResponseEntity<RoomResponseDTO> insert (@Valid @RequestBody RoomCreateDTO dto){
-		RoomResponseDTO resp = service.insert(dto);
+	public ResponseEntity<ReservationResponseDTO> insert(@RequestBody ReservationRequestDTO dto){
+		ReservationResponseDTO resp = service.insert(dto);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("{id}").buildAndExpand(resp.getId()).toUri();
 		return ResponseEntity.created(uri).body(resp);
 	}
 	
-	@PutMapping(value = "/{id}")
-	public ResponseEntity<RoomResponseDTO> update (@PathVariable Long id, @Valid @RequestBody RoomUpdateDTO dto){
-		RoomResponseDTO resp = service.update(id, dto);
-		return ResponseEntity.ok().body(resp);
-	}
-	
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> delete (@PathVariable Long id){
+	public ResponseEntity<Void> delete(@PathVariable Long id){
 		service.delete(id);
 		return ResponseEntity.noContent().build();
 	}

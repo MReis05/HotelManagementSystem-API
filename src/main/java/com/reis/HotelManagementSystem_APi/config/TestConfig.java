@@ -10,10 +10,13 @@ import org.springframework.context.annotation.Profile;
 
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
+import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
+import com.reis.HotelManagementSystem_APi.repositories.ReservationRepository;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 
 @Configuration
@@ -26,6 +29,9 @@ public class TestConfig implements CommandLineRunner {
 	@Autowired
 	private RoomRepository roomRepository;
 	
+	@Autowired
+	private ReservationRepository reservationRepository;
+	
 	@Override
 	public void run(String... args) throws Exception {
 		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
@@ -36,8 +42,19 @@ public class TestConfig implements CommandLineRunner {
 		Room r2 = new Room(02, 240.00, "Quarto com Ar-Condicionado", RoomStatus.LIMPEZA, RoomType.CASAL);
 		Room r3 = new Room(03, 340.00, "Quarto com Vararanda", RoomStatus.OCUPADO, RoomType.TRIPLO);
 		
+		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 01), LocalDate.of(2025, 11, 5), ReservationStatus.CONFIRMADA);
+		rv1.setGuest(g1);
+		rv1.setRoom(r1);
+		Reservation rv2 = new Reservation(LocalDate.of(2025, 11, 8), LocalDate.of(2025, 11, 10), ReservationStatus.CANCELADA);
+		rv2.setGuest(g2);
+		rv2.setRoom(r2);
+		Reservation rv3 = new Reservation(LocalDate.of(2025, 11, 11), LocalDate.of(2025, 11, 15), ReservationStatus.CONCLUIDA);
+		rv3.setGuest(g3);
+		rv3.setRoom(r3);
+		
 		roomRepository.saveAll(Arrays.asList(r1, r2, r3));
 		guestRepository.saveAll(Arrays.asList(g1, g2, g3));
+		reservationRepository.saveAll(Arrays.asList(rv1, rv2, rv3));
 	}
 
 }

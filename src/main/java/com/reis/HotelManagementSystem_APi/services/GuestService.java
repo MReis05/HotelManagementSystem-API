@@ -1,7 +1,7 @@
 package com.reis.HotelManagementSystem_APi.services;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.reis.HotelManagementSystem_APi.dto.AddressDTO;
 import com.reis.HotelManagementSystem_APi.dto.GuestRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
@@ -21,21 +22,25 @@ public class GuestService {
 	@Autowired
 	private GuestRepository repository;
 
-	public List<Guest> findAll() {
+	public List<GuestResponseDTO> findAll() {
 		List<Guest> list = repository.findAll();
-		return list;
+		List<GuestResponseDTO> dtoList = list.stream().map(GuestResponseDTO::new).collect(Collectors.toList());
+		return dtoList;
 	}
 
-	public Guest findById(Long id) {
-		Optional<Guest> obj = repository.findById(id);
-		return obj.orElseThrow(() -> new ResourceNotFoundException(id));
+	public GuestResponseDTO findById(Long id) {
+		Guest obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+		GuestResponseDTO dto = new GuestResponseDTO(obj);
+		return dto;
 	}
 
-	public Guest insert(GuestRequestDTO dto) {
+	public GuestResponseDTO insert(GuestRequestDTO dto) {
 		Address address = new Address(dto.getAddress().getCep(), dto.getAddress().getUf(), dto.getAddress().getCity(),
 				dto.getAddress().getNeighborhood(), dto.getAddress().getStreet(), dto.getAddress().getHouseNumber());
 		Guest obj = new Guest(dto.getName(), dto.getCpf(), dto.getEmail(), dto.getPhone(), dto.getBirthDate(), address);
-		return repository.save(obj);
+		
+		obj = repository.save(obj);
+		return new GuestResponseDTO(obj);
 	}
 
 	public void delete(Long id) {
@@ -52,12 +57,14 @@ public class GuestService {
 		}
 	}
 
-	public Guest update(Long id, GuestRequestDTO dto) {
+	public GuestResponseDTO update(Long id, GuestRequestDTO dto) {
 		Guest obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 
 		updateData(dto, obj);
+		
+		obj = repository.save(obj);
 
-		return repository.save(obj);
+		return new GuestResponseDTO(obj);
 	}
 
 	private void updateData(GuestRequestDTO dto, Guest obj) {

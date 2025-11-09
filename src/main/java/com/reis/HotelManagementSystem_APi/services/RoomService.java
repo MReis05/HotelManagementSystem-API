@@ -1,13 +1,14 @@
 package com.reis.HotelManagementSystem_APi.services;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.reis.HotelManagementSystem_APi.dto.RoomCreateDTO;
+import com.reis.HotelManagementSystem_APi.dto.RoomResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
@@ -20,24 +21,30 @@ public class RoomService {
 	@Autowired
 	private RoomRepository repository;
 	
-	public List<Room> findAll() {
-		return repository.findAll();
+	public List<RoomResponseDTO> findAll() {
+		List<Room> list = repository.findAll();
+		List<RoomResponseDTO> dto = list.stream().map(RoomResponseDTO::new).collect(Collectors.toList());
+		return dto;
 	}
 	
-	public Room findById(Long id) {
-		Optional<Room> obj = repository.findById(id);
-		return obj.orElseThrow(() -> new ResourceNotFoundException(id));
-	}
-	
-	public Room insert (RoomCreateDTO dto) {
-		Room obj = new Room(dto.getNumber(), dto.getPricePerNight(), dto.getDescription(), dto.getStatus(), dto.getType());
-		return repository.save(obj);
-	}
-	
-	public Room update (Long id, RoomUpdateDTO dto) {
+	public RoomResponseDTO findById(Long id) {
 		Room obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+		return new RoomResponseDTO(obj);
+	}
+	
+	public RoomResponseDTO insert (RoomCreateDTO dto) {
+		Room obj = new Room(dto.getNumber(), dto.getPricePerNight(), dto.getDescription(), dto.getStatus(), dto.getType());
+		obj = repository.save(obj);
+		return new RoomResponseDTO(obj);
+	}
+	
+	public RoomResponseDTO update (Long id, RoomUpdateDTO dto) {
+		Room obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+		
 		updateData(obj, dto);
-		return repository.save(obj);
+		
+		obj = repository.save(obj);
+		return new RoomResponseDTO(obj);
 	}
 	
 	public void delete (Long id) {
