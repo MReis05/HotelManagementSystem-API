@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidDurationReservationException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.RoomUnavailableException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -25,10 +27,25 @@ public class ControllerExceptionHandler {
 	
 	@ExceptionHandler(DatabaseException.class)
 	public ResponseEntity<StandardError> databaseError(DatabaseException e, HttpServletRequest request){
-		String error = "database Error";
+		String error = "Database Error";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(status).body(err);
 	}
 
+	@ExceptionHandler(RoomUnavailableException.class)
+	public ResponseEntity<StandardError> roomUnvaliable (RoomUnavailableException e, HttpServletRequest request){
+		String error = "Room Unvaliable";
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(InvalidDurationReservationException.class)
+	public ResponseEntity<StandardError> invalidDuration(InvalidDurationReservationException e, HttpServletRequest request){
+		String error = "Invalid Duration";
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
 }
