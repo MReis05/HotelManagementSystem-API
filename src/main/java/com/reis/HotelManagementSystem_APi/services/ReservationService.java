@@ -70,7 +70,7 @@ public class ReservationService {
 		if (room.getStatus() == RoomStatus.MANUTENCAO) {
 			throw new RoomUnavailableException(room.getNumber());
 		}
-		double totalValue = calculateDailyCharges(dto, room.getPricePerNight());
+		double totalValue = calculateTotalStayCost(dto, room.getPricePerNight());
 		
 		Reservation obj = new Reservation();
 		obj.setCheckInDate(dto.getCheckInDate());
@@ -125,7 +125,7 @@ public class ReservationService {
 		
 		updateData(obj, dto);
 		checkAvailability(obj.getRoom(), obj.getCheckInDate(), obj.getCheckOutDate(), id);
-		obj.setTotalValue(calculateDailyCharges(dto, obj.getRoom().getPricePerNight()));
+		obj.setTotalValue(calculateTotalStayCost(dto, obj.getRoom().getPricePerNight()));
 		repository.save(obj);
 		return new ReservationResponseDTO(obj);
 	}
@@ -168,7 +168,7 @@ public class ReservationService {
 		}
 	}
 
-	private double calculateDailyCharges(ReservationRequestDTO dto, double pricePerNight) {
+	private double calculateTotalStayCost(ReservationRequestDTO dto, double pricePerNight) {
 		long days = ChronoUnit.DAYS.between(dto.getCheckInDate(), dto.getCheckOutDate());
 		if (days <= 0) {
 			throw new InvalidDurationReservationException();

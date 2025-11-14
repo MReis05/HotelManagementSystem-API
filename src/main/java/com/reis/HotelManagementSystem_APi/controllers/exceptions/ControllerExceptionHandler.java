@@ -35,8 +35,8 @@ public class ControllerExceptionHandler {
 	}
 
 	@ExceptionHandler(RoomUnavailableException.class)
-	public ResponseEntity<StandardError> roomUnvaliable (RoomUnavailableException e, HttpServletRequest request){
-		String error = "Room Unvaliable";
+	public ResponseEntity<StandardError> roomUnavailable (RoomUnavailableException e, HttpServletRequest request){
+		String error = "Room Unavailable";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(status).body(err);

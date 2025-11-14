@@ -6,14 +6,17 @@ import java.util.Objects;
 
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -37,6 +40,9 @@ public class Reservation implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "room_id")
 	private Room room;
+	
+	@OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Stay stay;
 
 	public Reservation() {
 	}
@@ -104,6 +110,14 @@ public class Reservation implements Serializable {
 		this.room = room;
 	}
 
+	public Stay getStay() {
+		return stay;
+	}
+
+	public void setStay(Stay stay) {
+		this.stay = stay;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -120,4 +134,6 @@ public class Reservation implements Serializable {
 		Reservation other = (Reservation) obj;
 		return Objects.equals(id, other.id);
 	}
+	
+	
 }

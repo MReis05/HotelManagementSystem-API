@@ -29,7 +29,7 @@ public class ReservationController {
 	private ReservationService service;
 	
 	@GetMapping
-	public ResponseEntity<List<ReservationResponseDTO>> findReservation(@RequestParam(required = false) String status){
+	public ResponseEntity<List<ReservationResponseDTO>> findReservations(@RequestParam(required = false) String status){
 		List<ReservationResponseDTO> dto;
 		if (status != null && !status.isEmpty()) {
 			dto = service.findByStatus(status);
