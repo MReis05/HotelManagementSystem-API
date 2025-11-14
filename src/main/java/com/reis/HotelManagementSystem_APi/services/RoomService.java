@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.services;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +12,8 @@ import com.reis.HotelManagementSystem_APi.dto.RoomCreateDTO;
 import com.reis.HotelManagementSystem_APi.dto.RoomResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.RoomUpdateDTO;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
+import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
@@ -30,6 +33,51 @@ public class RoomService {
 	public RoomResponseDTO findById(Long id) {
 		Room obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 		return new RoomResponseDTO(obj);
+	}
+	
+	public List<RoomResponseDTO> findByStatus(String status){
+		RoomStatus roomStatus;
+		try {
+			roomStatus = RoomStatus.valueOf(status.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			return Collections.emptyList();
+		}
+		
+		List<Room> list = repository.findByStatus(roomStatus);
+		List<RoomResponseDTO> dto = list.stream().map(RoomResponseDTO::new).collect(Collectors.toList());
+		return dto;
+	}
+	
+	public List<RoomResponseDTO> findByType(String type){
+		RoomType roomType;
+		try {
+			roomType = RoomType.valueOf(type.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			return Collections.emptyList();
+		}
+		
+		List<Room> list = repository.findByType(roomType);
+		List<RoomResponseDTO> dto = list.stream().map(RoomResponseDTO::new).collect(Collectors.toList());
+		return dto;
+	}
+
+	
+	public List<RoomResponseDTO> findByTypeAndStatus(String type, String status){
+		RoomStatus roomStatus;
+		RoomType roomType;
+		try {
+			roomStatus = RoomStatus.valueOf(status.toUpperCase());
+			roomType = RoomType.valueOf(type.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			return Collections.emptyList();
+		}
+		
+		List<Room> list = repository.findByTypeAndStatus(roomType, roomStatus);
+		List<RoomResponseDTO> dto = list.stream().map(RoomResponseDTO::new).collect(Collectors.toList());
+		return dto;
 	}
 	
 	public RoomResponseDTO insert (RoomCreateDTO dto) {

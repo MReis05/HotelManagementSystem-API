@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -30,8 +31,23 @@ public class RoomController {
 	private RoomService service;
 	
 	@GetMapping
-	public ResponseEntity<List<RoomResponseDTO>> findAll(){
-		List<RoomResponseDTO> dto = service.findAll();
+	public ResponseEntity<List<RoomResponseDTO>> findRooms(@RequestParam(required = false) String type, @RequestParam(required = false) String status){
+		List<RoomResponseDTO> dto;
+		boolean statusCondition = status != null && !status.isEmpty();
+		boolean typeCondition =  type != null && !type.isEmpty();
+		
+		if(statusCondition && typeCondition) {
+			dto = service.findByTypeAndStatus(type, status);
+		}
+		else if (statusCondition) {
+			dto = service.findByStatus(status);
+		}
+		else if (typeCondition){
+			dto = service.findByType(type);
+		}
+		else {
+			dto = service.findAll();
+		}
 		return ResponseEntity.ok().body(dto);
 	}
 	

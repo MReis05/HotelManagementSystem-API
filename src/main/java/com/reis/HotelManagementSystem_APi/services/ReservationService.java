@@ -2,6 +2,7 @@ package com.reis.HotelManagementSystem_APi.services;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,22 @@ public class ReservationService {
 	public ReservationResponseDTO findById(Long id) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
 		return new ReservationResponseDTO(obj);
+	}
+	
+	public List<ReservationResponseDTO> findByStatus(String status) {
+		ReservationStatus reservationStatus;
+		try {
+			reservationStatus = ReservationStatus.valueOf(status.toUpperCase());
+		}
+		catch(IllegalArgumentException e) {
+			return Collections.emptyList();
+		}
+		
+		List<Reservation> list = repository.findByStatus(reservationStatus);
+		
+		List<ReservationResponseDTO> dto = list.stream().map(ReservationResponseDTO::new).collect(Collectors.toList());
+		
+		return dto;
 	}
 	
 	public ReservationResponseDTO insert (ReservationRequestDTO dto) {
