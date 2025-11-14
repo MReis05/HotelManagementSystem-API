@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidDurationReservationException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.RoomUnavailableException;
@@ -44,6 +45,14 @@ public class ControllerExceptionHandler {
 	@ExceptionHandler(InvalidDurationReservationException.class)
 	public ResponseEntity<StandardError> invalidDuration(InvalidDurationReservationException e, HttpServletRequest request){
 		String error = "Invalid Duration";
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(InvalidActionException.class)
+	public ResponseEntity<StandardError> invalidAction(InvalidActionException e, HttpServletRequest request){
+		String error = "Invalid Action";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(status).body(err);
