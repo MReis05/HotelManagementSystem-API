@@ -67,6 +67,6 @@ public class StayRequestDTO implements DateRangeValidatable {
 	@Override
 	@JsonIgnore
 	public LocalDateTime checkOutDate() {
-		return this.checkInDate;
+		return this.checkOutDate;
 	}
 }

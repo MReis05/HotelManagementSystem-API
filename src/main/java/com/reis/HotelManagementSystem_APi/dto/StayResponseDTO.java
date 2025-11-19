@@ -15,6 +15,8 @@ public class StayResponseDTO {
 	
 	private Long reservationId;
 	
+	private GuestSummaryDTO guestSummaryDTO;
+	
 	private List<IncidentalResponseDTO> incidentalList = new ArrayList<>();
 	
 	public StayResponseDTO() {
@@ -26,6 +28,7 @@ public class StayResponseDTO {
 		this.checkOutDate = obj.getCheckOutDate();
 		this.reservationId = obj.getReservation().getId();
 		this.incidentalList = obj.getIncidental().stream().map(IncidentalResponseDTO::new).collect(Collectors.toList());
+		this.guestSummaryDTO = new GuestSummaryDTO(obj.getReservation().getGuest());
 	}
 
 	public Long getId() {
@@ -46,5 +49,9 @@ public class StayResponseDTO {
 
 	public List<IncidentalResponseDTO> getIncidentalList() {
 		return incidentalList;
+	}
+
+	public GuestSummaryDTO getGuestSummaryDTO() {
+		return guestSummaryDTO;
 	}
 }

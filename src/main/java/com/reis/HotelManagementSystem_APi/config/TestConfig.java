@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.config;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,14 @@ import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.Stay;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.repositories.ReservationRepository;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
+import com.reis.HotelManagementSystem_APi.repositories.StayRepository;
 
 @Configuration
 @Profile("test")
@@ -31,6 +34,9 @@ public class TestConfig implements CommandLineRunner {
 	
 	@Autowired
 	private ReservationRepository reservationRepository;
+	
+	@Autowired
+	private StayRepository stayRepository;
 	
 	@Override
 	public void run(String... args) throws Exception {
@@ -52,9 +58,14 @@ public class TestConfig implements CommandLineRunner {
 		rv3.setGuest(g3);
 		rv3.setRoom(r3);
 		
+		Stay s1 = new Stay(LocalDateTime.of(2025, 11, 01, 13, 00), LocalDateTime.of(2025, 11, 05, 13, 00), rv1);
+		Stay s2 = new Stay(LocalDateTime.of(2025, 11, 8, 13, 00), LocalDateTime.of(2025, 11, 10, 13, 00), rv3);
+		
+		
 		roomRepository.saveAll(Arrays.asList(r1, r2, r3));
 		guestRepository.saveAll(Arrays.asList(g1, g2, g3));
 		reservationRepository.saveAll(Arrays.asList(rv1, rv2, rv3));
+		stayRepository.saveAll(Arrays.asList(s1, s2));
 	}
 
 }

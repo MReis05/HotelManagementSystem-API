@@ -27,7 +27,7 @@ public class Stay implements Serializable {
 	private LocalDateTime checkOutDate;
 	
 	@OneToOne
-	@JoinColumn(name = "reservation_id")
+	@JoinColumn(name = "reservation_id", nullable = false)
 	private Reservation reservation;
 	
 	@OneToMany(mappedBy = "stay")
@@ -80,7 +80,7 @@ public class Stay implements Serializable {
 			return 0.00;
 		}
 		
-		return incidental.stream().mapToDouble(item -> item.totalValue()).sum();
+		return incidental.stream().mapToDouble(Incidental::totalValue).sum();
 	}
 	
 	public Double getStayTotalValue() {

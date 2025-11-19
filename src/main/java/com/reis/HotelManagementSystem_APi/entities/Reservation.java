@@ -34,11 +34,11 @@ public class Reservation implements Serializable {
 	private ReservationStatus status;
 	
 	@ManyToOne
-	@JoinColumn(name ="guest_id")
+	@JoinColumn(name ="guest_id", nullable = false)
 	private Guest guest;
 	
 	@ManyToOne
-	@JoinColumn(name = "room_id")
+	@JoinColumn(name = "room_id", nullable = false)
 	private Room room;
 	
 	@OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
