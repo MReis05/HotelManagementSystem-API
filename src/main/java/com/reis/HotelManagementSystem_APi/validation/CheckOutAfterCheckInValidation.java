@@ -1,19 +1,17 @@
 package com.reis.HotelManagementSystem_APi.validation;
 
-import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class CheckOutAfterCheckInValidation implements ConstraintValidator<CheckOutAfterCheckIn, ReservationRequestDTO> {
+public class CheckOutAfterCheckInValidation implements ConstraintValidator<CheckOutAfterCheckIn, DateRangeValidatable> {
 
 	@Override
-	public boolean isValid(ReservationRequestDTO dto, ConstraintValidatorContext context) {
-		if(dto.getCheckInDate() == null || dto.getCheckOutDate() == null) {
+	public boolean isValid(DateRangeValidatable dto, ConstraintValidatorContext context) {
+		if(dto.checkInDate() == null || dto.checkOutDate() == null) {
 			return true;
 		}
 		
-		return dto.getCheckOutDate().isAfter(dto.getCheckInDate());
+		return dto.checkOutDate().isAfter(dto.checkInDate());
 	}
 
 }

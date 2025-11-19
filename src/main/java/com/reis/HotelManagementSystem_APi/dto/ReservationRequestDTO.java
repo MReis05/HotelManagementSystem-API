@@ -1,16 +1,19 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.reis.HotelManagementSystem_APi.validation.CheckOutAfterCheckIn;
+import com.reis.HotelManagementSystem_APi.validation.DateRangeValidatable;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @CheckOutAfterCheckIn
-public class ReservationRequestDTO {
+public class ReservationRequestDTO implements DateRangeValidatable {
 
 	@NotNull
 	@Positive
@@ -68,5 +71,17 @@ public class ReservationRequestDTO {
 
 	public void setCheckOutDate(LocalDate checkOutDate) {
 		this.checkOutDate = checkOutDate;
+	}
+
+	@Override
+	@JsonIgnore
+	public LocalDateTime checkInDate() {
+		return (this.checkInDate != null) ? this.checkInDate.atStartOfDay() : null;
+	}
+
+	@Override
+	@JsonIgnore
+	public LocalDateTime checkOutDate() {
+		return (this.checkOutDate != null) ? this.checkOutDate.atStartOfDay() : null;
 	}
 }
