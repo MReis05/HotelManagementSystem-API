@@ -16,6 +16,8 @@ import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class GuestService {
 
@@ -34,6 +36,7 @@ public class GuestService {
 		return dto;
 	}
 
+	@Transactional
 	public GuestResponseDTO insert(GuestRequestDTO dto) {
 		Address address = new Address(dto.getAddress().getCep(), dto.getAddress().getUf(), dto.getAddress().getCity(),
 				dto.getAddress().getNeighborhood(), dto.getAddress().getStreet(), dto.getAddress().getHouseNumber());
@@ -43,6 +46,7 @@ public class GuestService {
 		return new GuestResponseDTO(obj);
 	}
 
+	@Transactional
 	public void delete(Long id) {
 		
 		if(!repository.existsById(id)) {
@@ -57,6 +61,7 @@ public class GuestService {
 		}
 	}
 
+	@Transactional
 	public GuestResponseDTO update(Long id, GuestRequestDTO dto) {
 		Guest obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 

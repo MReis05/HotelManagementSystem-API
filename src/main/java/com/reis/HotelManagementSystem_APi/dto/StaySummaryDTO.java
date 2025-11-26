@@ -1,35 +1,26 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.reis.HotelManagementSystem_APi.entities.Stay;
 
-public class StayResponseDTO {
+public class StaySummaryDTO {
 
 	private Long id;
 	private LocalDateTime checkInDate;
 	private LocalDateTime checkOutDate;
 	private Double totalValue;
-	
-	private Long reservationId;
-	
+		
 	private GuestSummaryDTO guestSummaryDTO;
 	
-	private List<IncidentalResponseDTO> incidentalList = new ArrayList<>();
-	
-	public StayResponseDTO() {
+	public StaySummaryDTO() {
 	}
 	
-	public StayResponseDTO (Stay obj) {
+	public StaySummaryDTO(Stay obj) {
 		this.id = obj.getId();
 		this.checkInDate = obj.getCheckInDate();
 		this.checkOutDate = obj.getCheckOutDate();
 		this.totalValue = obj.getStayTotalValue();
-		this.reservationId = obj.getReservation().getId();
-		this.incidentalList = obj.getIncidental().stream().map(IncidentalResponseDTO::new).collect(Collectors.toList());
 		this.guestSummaryDTO = new GuestSummaryDTO(obj.getReservation().getGuest());
 	}
 
@@ -45,19 +36,11 @@ public class StayResponseDTO {
 		return checkOutDate;
 	}
 
-	public Long getReservationId() {
-		return reservationId;
-	}
-
-	public List<IncidentalResponseDTO> getIncidentalList() {
-		return incidentalList;
+	public Double getTotalValue() {
+		return totalValue;
 	}
 
 	public GuestSummaryDTO getGuestSummaryDTO() {
 		return guestSummaryDTO;
-	}
-
-	public Double getTotalValue() {
-		return totalValue;
 	}
 }

@@ -48,7 +48,7 @@ public class TestConfig implements CommandLineRunner {
 		Room r2 = new Room(02, 240.00, "Quarto com Ar-Condicionado", RoomStatus.LIMPEZA, RoomType.CASAL);
 		Room r3 = new Room(03, 340.00, "Quarto com Vararanda", RoomStatus.OCUPADO, RoomType.TRIPLO);
 		
-		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 01), LocalDate.of(2025, 11, 5), ReservationStatus.CONFIRMADA);
+		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
 		rv1.setGuest(g1);
 		rv1.setRoom(r1);
 		Reservation rv2 = new Reservation(LocalDate.of(2025, 11, 8), LocalDate.of(2025, 11, 10), ReservationStatus.CANCELADA);
@@ -58,7 +58,7 @@ public class TestConfig implements CommandLineRunner {
 		rv3.setGuest(g3);
 		rv3.setRoom(r3);
 		
-		Stay s1 = new Stay(LocalDateTime.of(2025, 11, 01, 13, 00), LocalDateTime.of(2025, 11, 05, 13, 00), rv1);
+		Stay s1 = new Stay(LocalDateTime.of(2025, 11, 25, 13, 00), null, rv1);
 		Stay s2 = new Stay(LocalDateTime.of(2025, 11, 8, 13, 00), LocalDateTime.of(2025, 11, 10, 13, 00), rv3);
 		
 		

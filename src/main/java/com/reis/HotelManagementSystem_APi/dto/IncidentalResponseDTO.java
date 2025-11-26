@@ -24,7 +24,7 @@ public class IncidentalResponseDTO {
 		this.total = obj.totalValue();
 		this.moment = obj.getMoment();
 	}
-
+	
 	public Long getId() {
 		return id;
 	}

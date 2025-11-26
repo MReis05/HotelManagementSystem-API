@@ -21,7 +21,6 @@ public class StayRequestDTO implements DateRangeValidatable {
 	@NotNull
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	private LocalDateTime checkInDate;
-	@NotNull
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	private LocalDateTime checkOutDate;
 	

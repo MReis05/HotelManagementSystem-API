@@ -24,6 +24,8 @@ import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidDurationRes
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.RoomUnavailableException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class ReservationService {
 
@@ -63,6 +65,7 @@ public class ReservationService {
 		return dto;
 	}
 	
+	@Transactional
 	public ReservationResponseDTO insert (ReservationRequestDTO dto) {
 		Guest guest = guestRepository.findById(dto.getGuestId()).orElseThrow(()-> new ResourceNotFoundException(dto.getGuestId()));
 		Room room = roomRepository.findById(dto.getRoomId()).orElseThrow(()-> new ResourceNotFoundException(dto.getRoomId()));
@@ -89,7 +92,7 @@ public class ReservationService {
 	
 	public ReservationResponseDTO updateStatus(Long id, String action, ReservationRequestDTO dto) {
 		if (action == null || action.isEmpty()) {
-			throw new InvalidActionException();
+			throw new InvalidActionException("Campo de ação vazio");
 		}
 		
 		action = action.toUpperCase();
@@ -103,12 +106,12 @@ public class ReservationService {
 			return resp;
 		}
 		default:{
-			throw new InvalidActionException();
+			throw new InvalidActionException("Ação invalida");
 		}
 		}
-		
 	}
 	
+	@Transactional
 	public ReservationResponseDTO cancelReservation (Long id) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
 		obj.setStatus(ReservationStatus.valueOf("CANCELADA"));
@@ -116,11 +119,12 @@ public class ReservationService {
 		return new ReservationResponseDTO(obj);
 	}
 	
+	@Transactional
 	public ReservationResponseDTO updateReservation(Long id, ReservationRequestDTO dto) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
 		
 		if(obj.getStatus() == ReservationStatus.CANCELADA || obj.getStatus() == ReservationStatus.CONCLUIDA) {
-			throw new InvalidActionException();
+			throw new InvalidActionException("Não é possivel atualizar dados de uma reserva cancelada ou concluída");
 		}
 		
 		updateData(obj, dto);
@@ -128,6 +132,34 @@ public class ReservationService {
 		obj.setTotalValue(calculateTotalStayCost(dto, obj.getRoom().getPricePerNight()));
 		repository.save(obj);
 		return new ReservationResponseDTO(obj);
+	}
+	
+	@Transactional
+	public Reservation checkInStay(Long id) {
+		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+		
+		obj.setStatus(ReservationStatus.EM_CURSO);
+		
+		if(obj.getRoom() != null) {
+			obj.getRoom().setStatus(RoomStatus.OCUPADO);
+		}
+		
+		return obj;
+	}
+	
+	@Transactional
+	public void peformCheckOut(Long id, LocalDate actualDate) {
+		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+		
+		obj.setCheckOutDate(actualDate);
+		
+		double newTotalStayCost = calculateInternalTotalStayCost(obj.getCheckInDate(), actualDate, obj.getRoom().getPricePerNight());
+		obj.setTotalValue(newTotalStayCost);
+		
+		obj.setStatus(ReservationStatus.CONCLUIDA);
+		if(obj.getRoom() != null) {
+			obj.getRoom().setStatus(RoomStatus.LIMPEZA);
+		}
 	}
 	
 	public void updateData (Reservation obj, ReservationRequestDTO dto) {
@@ -152,7 +184,7 @@ public class ReservationService {
 	
 	private void checkAvailability(Room room, LocalDate newCheckIn, LocalDate newCheckOut, Long id) {
 		for (Reservation reservation: room.getReservation()) {
-			if(reservation.getStatus() == ReservationStatus.CANCELADA) {
+			if(reservation.getStatus() == ReservationStatus.CANCELADA || reservation.getStatus() == ReservationStatus.CONCLUIDA) {
 				continue;
 			}
 			if(reservation.getId() == id) {
@@ -168,11 +200,17 @@ public class ReservationService {
 		}
 	}
 
-	private double calculateTotalStayCost(ReservationRequestDTO dto, double pricePerNight) {
+	private double calculateTotalStayCost(ReservationRequestDTO dto, Double pricePerNight) {
 		long days = ChronoUnit.DAYS.between(dto.getCheckInDate(), dto.getCheckOutDate());
 		if (days <= 0) {
 			throw new InvalidDurationReservationException();
 		}
+		return pricePerNight * days;
+	}
+	
+	private double calculateInternalTotalStayCost(LocalDate checkInDate, LocalDate checkOutDate, Double pricePerNight) {
+		long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+		if(days <= 0) days = 1;
 		return pricePerNight * days;
 	}
 }

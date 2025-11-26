@@ -18,6 +18,8 @@ import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class RoomService {
 
@@ -80,12 +82,14 @@ public class RoomService {
 		return dto;
 	}
 	
+	@Transactional
 	public RoomResponseDTO insert (RoomCreateDTO dto) {
 		Room obj = new Room(dto.getNumber(), dto.getPricePerNight(), dto.getDescription(), dto.getStatus(), dto.getType());
 		obj = repository.save(obj);
 		return new RoomResponseDTO(obj);
 	}
 	
+	@Transactional
 	public RoomResponseDTO update (Long id, RoomUpdateDTO dto) {
 		Room obj = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 		
@@ -95,6 +99,7 @@ public class RoomService {
 		return new RoomResponseDTO(obj);
 	}
 	
+	@Transactional
 	public void delete (Long id) {
 		
 		if(!repository.existsById(id)) {

@@ -60,7 +60,7 @@ public class RoomController {
 	@PostMapping
 	public ResponseEntity<RoomResponseDTO> insert (@Valid @RequestBody RoomCreateDTO dto){
 		RoomResponseDTO resp = service.insert(dto);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("{id}").buildAndExpand(resp.getId()).toUri();
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
 		return ResponseEntity.created(uri).body(resp);
 	}
 	

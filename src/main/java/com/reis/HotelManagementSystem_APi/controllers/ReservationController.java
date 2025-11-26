@@ -49,7 +49,7 @@ public class ReservationController {
 	@PostMapping
 	public ResponseEntity<ReservationResponseDTO> insert(@Valid @RequestBody ReservationRequestDTO dto){
 		ReservationResponseDTO resp = service.insert(dto);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("{id}").buildAndExpand(resp.getId()).toUri();
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
 		return ResponseEntity.created(uri).body(resp);
 	}
 	
