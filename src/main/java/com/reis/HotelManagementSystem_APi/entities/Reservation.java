@@ -2,8 +2,11 @@ package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 
 import jakarta.persistence.CascadeType;
@@ -16,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -44,6 +48,10 @@ public class Reservation implements Serializable {
 	@OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Stay stay;
 
+	@OneToMany(mappedBy = "reservation")
+	@JsonIgnore
+	private List<Payment> payments = new ArrayList<>();
+	
 	public Reservation() {
 	}
 
@@ -116,6 +124,10 @@ public class Reservation implements Serializable {
 
 	public void setStay(Stay stay) {
 		this.stay = stay;
+	}
+
+	public List<Payment> getPayments() {
+		return payments;
 	}
 
 	@Override
