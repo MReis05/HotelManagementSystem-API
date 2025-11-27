@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -9,14 +10,19 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.ReservationSummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
+import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
+import com.reis.HotelManagementSystem_APi.repositories.PaymentRepository;
 import com.reis.HotelManagementSystem_APi.repositories.ReservationRepository;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
@@ -38,9 +44,12 @@ public class ReservationService {
 	@Autowired
 	private RoomRepository roomRepository;
 	
-	public List<ReservationResponseDTO> findAll(){
+	@Autowired
+	private PaymentRepository paymentRepository;
+	
+	public List<ReservationSummaryDTO> findAll(){
 		List<Reservation> list = repository.findAll();
-		List<ReservationResponseDTO> dto = list.stream().map(ReservationResponseDTO::new).collect(Collectors.toList());
+		List<ReservationSummaryDTO> dto = list.stream().map(ReservationSummaryDTO::new).collect(Collectors.toList());
 		return dto;
 	}
 	
@@ -49,7 +58,7 @@ public class ReservationService {
 		return new ReservationResponseDTO(obj);
 	}
 	
-	public List<ReservationResponseDTO> findByStatus(String status) {
+	public List<ReservationSummaryDTO> findByStatus(String status) {
 		ReservationStatus reservationStatus;
 		try {
 			reservationStatus = ReservationStatus.valueOf(status.toUpperCase());
@@ -60,7 +69,7 @@ public class ReservationService {
 		
 		List<Reservation> list = repository.findByStatus(reservationStatus);
 		
-		List<ReservationResponseDTO> dto = list.stream().map(ReservationResponseDTO::new).collect(Collectors.toList());
+		List<ReservationSummaryDTO> dto = list.stream().map(ReservationSummaryDTO::new).collect(Collectors.toList());
 		
 		return dto;
 	}
@@ -102,6 +111,9 @@ public class ReservationService {
 			return resp;
 		}
 		case "ATUALIZAR":{
+			if(dto == null) {
+				throw new InvalidActionException("Dados da reserva são obrigatórios para a atualização dos dados");
+			}
 			ReservationResponseDTO resp = updateReservation(id, dto);
 			return resp;
 		}
@@ -131,6 +143,30 @@ public class ReservationService {
 		checkAvailability(obj.getRoom(), obj.getCheckInDate(), obj.getCheckOutDate(), id);
 		obj.setTotalValue(calculateTotalStayCost(dto, obj.getRoom().getPricePerNight()));
 		repository.save(obj);
+		return new ReservationResponseDTO(obj);
+	}
+	
+	@Transactional
+	public ReservationResponseDTO confirmReservation(Long id, PaymentRequestDTO dto) {
+		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+		Payment payment = new Payment();
+		payment.setAmount(dto.getAmount());
+		payment.setMoment(Instant.now());
+		payment.setStatus(PaymentStatus.APROVADO);
+		payment.setType(dto.getType());
+		payment.setReservation(obj);
+		payment = paymentRepository.save(payment);
+		obj.getPayments().add(payment);
+		double totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
+				.mapToDouble(Payment::getAmount).sum();
+		
+		if(totalPaid >= (obj.getTotalValue() * 0.50)) {
+			if (obj.getStatus() == ReservationStatus.PENDENTE) {
+				obj.setStatus(ReservationStatus.CONFIRMADA);
+				obj = repository.save(obj);
+			}
+		}
+
 		return new ReservationResponseDTO(obj);
 	}
 	

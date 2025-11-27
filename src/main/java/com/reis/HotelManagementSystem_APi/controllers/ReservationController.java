@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.ReservationSummaryDTO;
 import com.reis.HotelManagementSystem_APi.services.ReservationService;
 
 import jakarta.validation.Valid;
@@ -29,8 +31,8 @@ public class ReservationController {
 	private ReservationService service;
 	
 	@GetMapping
-	public ResponseEntity<List<ReservationResponseDTO>> findReservations(@RequestParam(required = false) String status){
-		List<ReservationResponseDTO> dto;
+	public ResponseEntity<List<ReservationSummaryDTO>> findReservations(@RequestParam(required = false) String status){
+		List<ReservationSummaryDTO> dto;
 		if (status != null && !status.isEmpty()) {
 			dto = service.findByStatus(status);
 		}
@@ -54,8 +56,14 @@ public class ReservationController {
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<ReservationResponseDTO> updateStatus(@PathVariable Long id, @RequestParam String action, @RequestBody ReservationRequestDTO dto){
-		ReservationResponseDTO resp = service.updateStatus(id, action, dto);
+	public ResponseEntity<ReservationResponseDTO> updateStatus(@PathVariable Long id, @RequestParam String action, @RequestBody(required = false) ReservationRequestDTO reservationDto){
+		ReservationResponseDTO resp = service.updateStatus(id, action, reservationDto);
+		return ResponseEntity.ok().body(resp);
+	}
+	
+	@PutMapping(value = "/{id}/payment")
+	public ResponseEntity<ReservationResponseDTO> confirmReservation (@PathVariable Long id, @Valid @RequestBody PaymentRequestDTO dto){
+		ReservationResponseDTO resp = service.confirmReservation(id, dto);
 		return ResponseEntity.ok().body(resp);
 	}
 }

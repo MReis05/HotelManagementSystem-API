@@ -1,14 +1,11 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 
-public class ReservationResponseDTO {
+public class ReservationSummaryDTO {
 
 	private Long id;
 	private LocalDate checkInDate;
@@ -19,12 +16,10 @@ public class ReservationResponseDTO {
 	private RoomSummaryDTO room;
 	private GuestSummaryDTO guest;
 	
-	private List<PaymentSummaryDTO> paymentsSummary = new ArrayList<>();
-	
-	public ReservationResponseDTO() {
+	public ReservationSummaryDTO() {
 	}
 	
-	public ReservationResponseDTO(Reservation obj) {
+	public ReservationSummaryDTO(Reservation obj) {
 		this.id = obj.getId();
 		this.checkInDate = obj.getCheckInDate();
 		this.checkOutDate = obj.getCheckOutDate();
@@ -32,38 +27,61 @@ public class ReservationResponseDTO {
 		this.status = obj.getStatus();
 		this.room = new RoomSummaryDTO(obj.getRoom());
 		this.guest = new GuestSummaryDTO(obj.getGuest());
-		this.paymentsSummary = obj.getPayments().stream().map(PaymentSummaryDTO::new).collect(Collectors.toList());
 	}
 
 	public Long getId() {
 		return id;
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	public LocalDate getCheckInDate() {
 		return checkInDate;
+	}
+
+	public void setCheckInDate(LocalDate checkInDate) {
+		this.checkInDate = checkInDate;
 	}
 
 	public LocalDate getCheckOutDate() {
 		return checkOutDate;
 	}
 
+	public void setCheckOutDate(LocalDate checkOutDate) {
+		this.checkOutDate = checkOutDate;
+	}
+
 	public Double getTotalValue() {
 		return totalValue;
+	}
+
+	public void setTotalValue(Double totalValue) {
+		this.totalValue = totalValue;
 	}
 
 	public ReservationStatus getStatus() {
 		return status;
 	}
 
+	public void setStatus(ReservationStatus status) {
+		this.status = status;
+	}
+
 	public RoomSummaryDTO getRoomSummaryDTO() {
 		return room;
+	}
+
+	public void setRoomSummaryDTO(RoomSummaryDTO room) {
+		this.room = room;
 	}
 
 	public GuestSummaryDTO getGuestSummaryDTO() {
 		return guest;
 	}
 
-	public List<PaymentSummaryDTO> getPaymentsSummary() {
-		return paymentsSummary;
+	public void setGuestSummaryDTO(GuestSummaryDTO guest) {
+		this.guest = guest;
 	}
 }
