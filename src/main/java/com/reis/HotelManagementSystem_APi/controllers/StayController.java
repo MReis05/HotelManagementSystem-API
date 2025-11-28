@@ -17,6 +17,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.reis.HotelManagementSystem_APi.dto.IncidentalRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.IncidentalResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StaySummaryDTO;
@@ -51,15 +53,22 @@ public class StayController {
 	}
 	
 	@PutMapping(value = "/{id}/checkOut")
-	public ResponseEntity<StayResponseDTO> checkOut(@RequestParam Long id){
+	public ResponseEntity<StayResponseDTO> checkOut(@PathVariable Long id){
 		StayResponseDTO resp = service.checkOut(id);
 		return ResponseEntity.ok().body(resp);
 	}
 	
 	@PutMapping(value = "/incidental")
-	public ResponseEntity<IncidentalResponseDTO> addIncidental(@RequestParam Long stayId, @RequestBody IncidentalRequestDTO dto){
+	public ResponseEntity<IncidentalResponseDTO> addIncidental(@RequestParam Long stayId, @Valid @RequestBody IncidentalRequestDTO dto){
 		IncidentalResponseDTO resp = service.addIncidental(stayId, dto);
 		return ResponseEntity.ok().body(resp);
+	}
+	
+	@PostMapping(value= "/{id}/payment")
+	public ResponseEntity<PaymentResponseDTO> makePayment(@PathVariable Long id, @Valid @RequestBody PaymentRequestDTO dto){
+		PaymentResponseDTO resp = service.makePayment(id, dto);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
+		return ResponseEntity.created(uri).body(resp); 
 	}
 }
 

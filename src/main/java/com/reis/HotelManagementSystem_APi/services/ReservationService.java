@@ -18,6 +18,7 @@ import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.Stay;
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
@@ -25,6 +26,7 @@ import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.repositories.PaymentRepository;
 import com.reis.HotelManagementSystem_APi.repositories.ReservationRepository;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
+import com.reis.HotelManagementSystem_APi.services.exceptions.CheckOutException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidDurationReservationException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
@@ -149,14 +151,7 @@ public class ReservationService {
 	@Transactional
 	public ReservationResponseDTO confirmReservation(Long id, PaymentRequestDTO dto) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
-		Payment payment = new Payment();
-		payment.setAmount(dto.getAmount());
-		payment.setMoment(Instant.now());
-		payment.setStatus(PaymentStatus.APROVADO);
-		payment.setType(dto.getType());
-		payment.setReservation(obj);
-		payment = paymentRepository.save(payment);
-		obj.getPayments().add(payment);
+		obj.getPayments().add(processPayment(dto, obj));
 		double totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
 				.mapToDouble(Payment::getAmount).sum();
 		
@@ -184,17 +179,24 @@ public class ReservationService {
 	}
 	
 	@Transactional
-	public void peformCheckOut(Long id, LocalDate actualDate) {
-		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+	public void peformCheckOut(Stay stay) {
+		Reservation obj = repository.findById(stay.getReservation().getId()).orElseThrow(()-> new ResourceNotFoundException(stay.getReservation().getId()));
 		
-		obj.setCheckOutDate(actualDate);
+		obj.setCheckOutDate(stay.getCheckOutDate().toLocalDate());
 		
-		double newTotalStayCost = calculateInternalTotalStayCost(obj.getCheckInDate(), actualDate, obj.getRoom().getPricePerNight());
-		obj.setTotalValue(newTotalStayCost);
+		double newTotalStayCost = calculateInternalTotalStayCost(obj.getCheckInDate(), obj.getCheckOutDate(), obj.getRoom().getPricePerNight());
+		obj.setTotalValue(newTotalStayCost + stay.getIncidentalsTotalValue());
 		
-		obj.setStatus(ReservationStatus.CONCLUIDA);
-		if(obj.getRoom() != null) {
-			obj.getRoom().setStatus(RoomStatus.LIMPEZA);
+		double totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
+				.mapToDouble(Payment::getAmount).sum();
+		if(Math.abs(totalPaid - obj.getTotalValue()) < 0.01) {
+			obj.setStatus(ReservationStatus.CONCLUIDA);
+			if(obj.getRoom() != null) {
+				obj.getRoom().setStatus(RoomStatus.LIMPEZA);
+			}
+		}
+		else {
+			throw new CheckOutException("Não é possível realizar o Check-Out com valores ainda pendentes");
 		}
 	}
 	
@@ -219,7 +221,7 @@ public class ReservationService {
 	}
 	
 	private void checkAvailability(Room room, LocalDate newCheckIn, LocalDate newCheckOut, Long id) {
-		for (Reservation reservation: room.getReservation()) {
+		for (Reservation reservation: room.getReservations()) {
 			if(reservation.getStatus() == ReservationStatus.CANCELADA || reservation.getStatus() == ReservationStatus.CONCLUIDA) {
 				continue;
 			}
@@ -248,5 +250,16 @@ public class ReservationService {
 		long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 		if(days <= 0) days = 1;
 		return pricePerNight * days;
+	}
+	
+	public Payment processPayment(PaymentRequestDTO dto, Reservation reservation) {
+		Payment payment = new Payment();
+		payment.setAmount(dto.getAmount());
+		payment.setMoment(Instant.now());
+		payment.setStatus(PaymentStatus.APROVADO);
+		payment.setType(dto.getType());
+		payment.setReservation(reservation);
+		payment = paymentRepository.save(payment);
+		return payment;
 	}
 }

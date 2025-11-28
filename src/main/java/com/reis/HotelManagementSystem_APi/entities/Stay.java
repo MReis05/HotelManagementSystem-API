@@ -31,7 +31,7 @@ public class Stay implements Serializable {
 	private Reservation reservation;
 	
 	@OneToMany(mappedBy = "stay")
-	private List<Incidental> incidental = new ArrayList<>();
+	private List<Incidental> incidentals = new ArrayList<>();
 	
 	public Stay() {
 	}
@@ -71,16 +71,16 @@ public class Stay implements Serializable {
 		return id;
 	}
 
-	public List<Incidental> getIncidental() {
-		return incidental;
+	public List<Incidental> getIncidentals() {
+		return incidentals;
 	}
 	
-	public Double getIncidentalTotalValue() {
-		if(incidental == null || incidental.isEmpty()) {
+	public Double getIncidentalsTotalValue() {
+		if(incidentals == null || incidentals.isEmpty()) {
 			return 0.00;
 		}
 		
-		return incidental.stream().mapToDouble(Incidental::totalValue).sum();
+		return incidentals.stream().mapToDouble(Incidental::totalValue).sum();
 	}
 	
 	public Double getStayTotalValue() {
@@ -89,7 +89,7 @@ public class Stay implements Serializable {
 			totalValue = reservation.getTotalValue();
 		}
 		
-		Double totalIncidental = getIncidentalTotalValue();
+		Double totalIncidental = getIncidentalsTotalValue();
 		
 		return totalValue + totalIncidental;
 	}

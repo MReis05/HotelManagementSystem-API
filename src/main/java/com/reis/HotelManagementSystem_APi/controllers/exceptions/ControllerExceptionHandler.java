@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.reis.HotelManagementSystem_APi.services.exceptions.CheckInDateException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.CheckOutException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidDurationReservationException;
@@ -62,6 +63,14 @@ public class ControllerExceptionHandler {
 	@ExceptionHandler(CheckInDateException.class)
 	public ResponseEntity<StandardError> invalidCheckInDateStay(CheckInDateException e, HttpServletRequest request){
 		String error = "Invalid Check-In Date";
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(CheckOutException.class)
+	public ResponseEntity<StandardError> checkOut(CheckOutException e, HttpServletRequest request){
+		String error = "Error making Check-Out";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(status).body(err);

@@ -35,7 +35,7 @@ public class Guest implements Serializable {
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "guest")
-	private List<Reservation> reservation = new ArrayList<>();
+	private List<Reservation> reservations = new ArrayList<>();
 	
 	public Guest() {
 	}
@@ -102,8 +102,8 @@ public class Guest implements Serializable {
 		this.address = address;
 	}
 	
-	public List<Reservation> getReservation() {
-		return reservation;
+	public List<Reservation> getReservations() {
+		return reservations;
 	}
 
 	@Override

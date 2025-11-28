@@ -36,7 +36,7 @@ public class Room implements Serializable{
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "room")
-	private List<Reservation> reservation = new ArrayList<>();
+	private List<Reservation> reservations = new ArrayList<>();
 	
 	public Room() {
 	}
@@ -94,8 +94,8 @@ public class Room implements Serializable{
 		this.type = type;
 	}
 
-	public List<Reservation> getReservation() {
-		return reservation;
+	public List<Reservation> getReservations() {
+		return reservations;
 	}
 
 	@Override

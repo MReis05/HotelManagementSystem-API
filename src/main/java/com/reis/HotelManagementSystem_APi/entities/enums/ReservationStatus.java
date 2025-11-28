@@ -5,7 +5,7 @@ public enum ReservationStatus {
 	CONFIRMADA(1, "Reserva confirmada"),
 	PENDENTE(2, "Reserva pendente"),
 	CANCELADA(3, "Reserva cancelada"),
-	EM_CURSO(4, "Reserva em curso, check-In Efuado"),
+	EM_CURSO(4, "Reserva em curso, check-In efetuado"),
 	CONCLUIDA(5, "Reserva concluída");
 	
 	

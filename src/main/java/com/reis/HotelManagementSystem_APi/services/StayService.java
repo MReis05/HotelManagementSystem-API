@@ -9,10 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.reis.HotelManagementSystem_APi.dto.IncidentalRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.IncidentalResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StaySummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Incidental;
+import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Stay;
 import com.reis.HotelManagementSystem_APi.repositories.IncidentalRepository;
@@ -67,7 +70,7 @@ public class StayService {
 		Stay obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
 		obj.setCheckOutDate(LocalDateTime.now());
 		
-		reservationService.peformCheckOut(obj.getReservation().getId(), obj.getCheckOutDate().toLocalDate());
+		reservationService.peformCheckOut(obj);
 		obj = repository.save(obj);
 		return new StayResponseDTO(obj);
 	}
@@ -82,6 +85,15 @@ public class StayService {
 		Incidental incidental = new Incidental(dto.getName(), dto.getQuantity(), dto.getPrice(), (dto.getMoment() != null)? dto.getMoment(): LocalDateTime.now(), obj);
 		incidentalRepository.save(incidental);
 		return new IncidentalResponseDTO(incidental);
+	}
+	
+	@Transactional
+	public PaymentResponseDTO makePayment(Long id, PaymentRequestDTO dto) {
+		Stay obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+		Payment payment = reservationService.processPayment(dto, obj.getReservation());
+		
+		return new PaymentResponseDTO(payment);
+		
 	}
 	
 }
