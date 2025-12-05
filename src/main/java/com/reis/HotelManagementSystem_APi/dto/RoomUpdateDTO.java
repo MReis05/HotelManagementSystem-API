@@ -1,5 +1,7 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
+
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 
 import jakarta.validation.constraints.Positive;
@@ -7,25 +9,25 @@ import jakarta.validation.constraints.Positive;
 public class RoomUpdateDTO {
 	
 	@Positive
-	private Double pricePerNight;
+	private BigDecimal pricePerNight;
 	private String description;
 	private RoomStatus status;
 	
 	public RoomUpdateDTO () {
 	}
 
-	public RoomUpdateDTO(Double pricePerNight, String description, RoomStatus status) {
+	public RoomUpdateDTO(BigDecimal pricePerNight, String description, RoomStatus status) {
 		super();
 		this.pricePerNight = pricePerNight;
 		this.description = description;
 		this.status = status;
 	}
 
-	public Double getPricePerNight() {
+	public BigDecimal getPricePerNight() {
 		return pricePerNight;
 	}
 
-	public void setPricePerNight(Double pricePerNight) {
+	public void setPricePerNight(BigDecimal pricePerNight) {
 		this.pricePerNight = pricePerNight;
 	}
 

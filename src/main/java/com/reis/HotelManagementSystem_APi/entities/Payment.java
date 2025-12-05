@@ -1,12 +1,14 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,7 +28,8 @@ public class Payment implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Instant moment;
-	private Double amount;
+	@Column(precision = 10, scale = 2)
+	private BigDecimal amount;
 	
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus status;
@@ -40,7 +43,7 @@ public class Payment implements Serializable {
 	public Payment () {
 	}
 
-	public Payment(Instant moment, PaymentStatus status, PaymentType type, Double amount, Reservation reservation) {
+	public Payment(Instant moment, PaymentStatus status, PaymentType type, BigDecimal amount, Reservation reservation) {
 		super();
 		this.moment = moment;
 		this.status = status;
@@ -77,11 +80,11 @@ public class Payment implements Serializable {
 		this.type = type;
 	}
 
-	public Double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Double amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

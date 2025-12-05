@@ -1,5 +1,7 @@
 package com.reis.HotelManagementSystem_APi.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -84,7 +86,7 @@ public class ReservationService {
 		if (room.getStatus() == RoomStatus.MANUTENCAO) {
 			throw new RoomUnavailableException(room.getNumber());
 		}
-		double totalValue = calculateTotalStayCost(dto, room.getPricePerNight());
+		BigDecimal totalValue = calculateTotalStayCost(dto, room.getPricePerNight());
 		
 		Reservation obj = new Reservation();
 		obj.setCheckInDate(dto.getCheckInDate());
@@ -99,30 +101,6 @@ public class ReservationService {
 		obj = repository.save(obj);
 		
 		return new ReservationResponseDTO(obj);
-	}
-	
-	public ReservationResponseDTO updateStatus(Long id, String action, ReservationRequestDTO dto) {
-		if (action == null || action.isEmpty()) {
-			throw new InvalidActionException("Campo de ação vazio");
-		}
-		
-		action = action.toUpperCase();
-		switch(action) {
-		case "CANCELAR":{
-			ReservationResponseDTO resp = cancelReservation(id);
-			return resp;
-		}
-		case "ATUALIZAR":{
-			if(dto == null) {
-				throw new InvalidActionException("Dados da reserva são obrigatórios para a atualização dos dados");
-			}
-			ReservationResponseDTO resp = updateReservation(id, dto);
-			return resp;
-		}
-		default:{
-			throw new InvalidActionException("Ação invalida");
-		}
-		}
 	}
 	
 	@Transactional
@@ -152,10 +130,12 @@ public class ReservationService {
 	public ReservationResponseDTO confirmReservation(Long id, PaymentRequestDTO dto) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
 		obj.getPayments().add(processPayment(dto, obj));
-		double totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
-				.mapToDouble(Payment::getAmount).sum();
+		BigDecimal totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
+				.map(Payment::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		
-		if(totalPaid >= (obj.getTotalValue() * 0.50)) {
+		BigDecimal percent = new BigDecimal("0.50");
+		BigDecimal minimumValue = obj.getTotalValue().multiply(percent);
+		if(totalPaid.compareTo(minimumValue) >= 0) {
 			if (obj.getStatus() == ReservationStatus.PENDENTE) {
 				obj.setStatus(ReservationStatus.CONFIRMADA);
 				obj = repository.save(obj);
@@ -179,17 +159,20 @@ public class ReservationService {
 	}
 	
 	@Transactional
-	public void peformCheckOut(Stay stay) {
+	public void performCheckOut(Stay stay) {
 		Reservation obj = repository.findById(stay.getReservation().getId()).orElseThrow(()-> new ResourceNotFoundException(stay.getReservation().getId()));
 		
 		obj.setCheckOutDate(stay.getCheckOutDate().toLocalDate());
 		
-		double newTotalStayCost = calculateInternalTotalStayCost(obj.getCheckInDate(), obj.getCheckOutDate(), obj.getRoom().getPricePerNight());
-		obj.setTotalValue(newTotalStayCost + stay.getIncidentalsTotalValue());
+		BigDecimal newTotalStayCost = calculateInternalTotalStayCost(obj.getCheckInDate(), obj.getCheckOutDate(), obj.getRoom().getPricePerNight());
+		obj.setTotalValue(newTotalStayCost);
 		
-		double totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
-				.mapToDouble(Payment::getAmount).sum();
-		if(Math.abs(totalPaid - obj.getTotalValue()) < 0.01) {
+		BigDecimal totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
+				.map(Payment::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+		
+		BigDecimal finalBill = obj.getTotalValue().add(stay.getIncidentalsTotalValue());
+		
+		if(finalBill.compareTo(totalPaid) == 0) {
 			obj.setStatus(ReservationStatus.CONCLUIDA);
 			if(obj.getRoom() != null) {
 				obj.getRoom().setStatus(RoomStatus.LIMPEZA);
@@ -200,7 +183,7 @@ public class ReservationService {
 		}
 	}
 	
-	public void updateData (Reservation obj, ReservationRequestDTO dto) {
+	private void updateData (Reservation obj, ReservationRequestDTO dto) {
 		if(dto.getCheckInDate() != null) {
 			obj.setCheckInDate(dto.getCheckInDate());
 			obj.setStatus(ReservationStatus.PENDENTE);
@@ -238,23 +221,23 @@ public class ReservationService {
 		}
 	}
 
-	private double calculateTotalStayCost(ReservationRequestDTO dto, Double pricePerNight) {
+	private BigDecimal calculateTotalStayCost(ReservationRequestDTO dto, BigDecimal pricePerNight) {
 		long days = ChronoUnit.DAYS.between(dto.getCheckInDate(), dto.getCheckOutDate());
 		if (days <= 0) {
 			throw new InvalidDurationReservationException();
 		}
-		return pricePerNight * days;
+		return pricePerNight.multiply(BigDecimal.valueOf(days));
 	}
 	
-	private double calculateInternalTotalStayCost(LocalDate checkInDate, LocalDate checkOutDate, Double pricePerNight) {
+	private BigDecimal calculateInternalTotalStayCost(LocalDate checkInDate, LocalDate checkOutDate, BigDecimal pricePerNight) {
 		long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 		if(days <= 0) days = 1;
-		return pricePerNight * days;
+		return pricePerNight.multiply(BigDecimal.valueOf(days));
 	}
 	
 	public Payment processPayment(PaymentRequestDTO dto, Reservation reservation) {
 		Payment payment = new Payment();
-		payment.setAmount(dto.getAmount());
+		payment.setAmount(dto.getAmount().setScale(2, RoundingMode.HALF_EVEN));
 		payment.setMoment(Instant.now());
 		payment.setStatus(PaymentStatus.APROVADO);
 		payment.setType(dto.getType());

@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,23 +76,22 @@ public class Stay implements Serializable {
 		return incidentals;
 	}
 	
-	public Double getIncidentalsTotalValue() {
+	public BigDecimal getIncidentalsTotalValue() {
 		if(incidentals == null || incidentals.isEmpty()) {
-			return 0.00;
+			return BigDecimal.ZERO;
 		}
 		
-		return incidentals.stream().mapToDouble(Incidental::totalValue).sum();
+		return incidentals.stream().map(Incidental::totalValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 	
-	public Double getStayTotalValue() {
-		Double totalValue = 0.00;
+	public BigDecimal getStayTotalValue() {
+		BigDecimal total = getIncidentalsTotalValue();
 		if(reservation != null && reservation.getTotalValue() != null) {
-			totalValue = reservation.getTotalValue();
+			total = total.add(reservation.getTotalValue());
 		}
 		
-		Double totalIncidental = getIncidentalsTotalValue();
 		
-		return totalValue + totalIncidental;
+		return total;
 	}
 
 	@Override

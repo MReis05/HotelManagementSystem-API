@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.services;
 
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,7 +85,7 @@ public class RoomService {
 	
 	@Transactional
 	public RoomResponseDTO insert (RoomCreateDTO dto) {
-		Room obj = new Room(dto.getNumber(), dto.getPricePerNight(), dto.getDescription(), dto.getStatus(), dto.getType());
+		Room obj = new Room(dto.getNumber(), dto.getPricePerNight().setScale(2, RoundingMode.HALF_EVEN), dto.getDescription(), dto.getStatus(), dto.getType());
 		obj = repository.save(obj);
 		return new RoomResponseDTO(obj);
 	}
@@ -119,7 +120,7 @@ public class RoomService {
 			obj.setDescription(dto.getDescription());
 		}
 		if (dto.getPricePerNight() != null) {
-			obj.setPricePerNight(dto.getPricePerNight());
+			obj.setPricePerNight(dto.getPricePerNight().setScale(2, RoundingMode.HALF_EVEN));
 		}
 		if (dto.getStatus() != null) {
 			obj.setStatus(dto.getStatus());

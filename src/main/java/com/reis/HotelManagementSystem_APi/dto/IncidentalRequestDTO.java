@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
@@ -15,13 +16,13 @@ public class IncidentalRequestDTO {
 	private Integer quantity;
 	@NotNull
 	@Positive
-	private Double price;
+	private BigDecimal price;
 	private LocalDateTime moment;
 	
 	public IncidentalRequestDTO() {
 	}
 
-	public IncidentalRequestDTO(String name, Integer quantity, Double price, LocalDateTime moment) {
+	public IncidentalRequestDTO(String name, Integer quantity, BigDecimal price, LocalDateTime moment) {
 		super();
 		this.name = name;
 		this.quantity = quantity;
@@ -45,11 +46,11 @@ public class IncidentalRequestDTO {
 		this.quantity = quantity;
 	}
 
-	public Double getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(Double price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 

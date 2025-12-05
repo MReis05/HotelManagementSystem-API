@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +13,14 @@ public class StayResponseDTO {
 	private Long id;
 	private LocalDateTime checkInDate;
 	private LocalDateTime checkOutDate;
-	private Double totalValue;
+	private BigDecimal totalValue;
 	
 	private Long reservationId;
 	
 	private GuestSummaryDTO guestSummaryDTO;
 	
 	private List<IncidentalResponseDTO> incidentalsList = new ArrayList<>();
+	
 	
 	public StayResponseDTO() {
 	}
@@ -57,7 +59,7 @@ public class StayResponseDTO {
 		return guestSummaryDTO;
 	}
 
-	public Double getTotalValue() {
+	public BigDecimal getTotalValue() {
 		return totalValue;
 	}
 }

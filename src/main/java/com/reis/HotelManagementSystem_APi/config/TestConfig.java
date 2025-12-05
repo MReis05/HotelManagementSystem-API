@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.config;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -44,9 +45,9 @@ public class TestConfig implements CommandLineRunner {
 		Guest g2 = new Guest("Maria White", "99999999901","maria@gmail.com", "779118298282", LocalDate.of(2000, 5, 12), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
 		Guest g3 = new Guest("Clark Brown", "99999999901","clark@gmail.com", "779118298282", LocalDate.of(1978, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
 		
-		Room r1 = new Room(01, 190.00, "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
-		Room r2 = new Room(02, 240.00, "Quarto com Ar-Condicionado", RoomStatus.LIMPEZA, RoomType.CASAL);
-		Room r3 = new Room(03, 340.00, "Quarto com Vararanda", RoomStatus.OCUPADO, RoomType.TRIPLO);
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		Room r2 = new Room(2, new BigDecimal("240.00"), "Quarto com Ar-Condicionado", RoomStatus.LIMPEZA, RoomType.CASAL);
+		Room r3 = new Room(3, new BigDecimal("340.00"), "Quarto com Vararanda", RoomStatus.OCUPADO, RoomType.TRIPLO);
 		
 		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
 		rv1.setGuest(g1);

@@ -1,5 +1,7 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
+
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 
@@ -14,7 +16,7 @@ public class RoomCreateDTO {
 	private Integer number;
 	@NotNull
 	@Positive
-	private Double pricePerNight;
+	private BigDecimal pricePerNight;
 	@NotBlank
 	private String description;
 	@NotNull
@@ -25,7 +27,7 @@ public class RoomCreateDTO {
 	public RoomCreateDTO() {
 	}
 
-	public RoomCreateDTO(Integer number, Double pricePerNight, String description, RoomStatus status, RoomType type) {
+	public RoomCreateDTO(Integer number, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
 		super();
 		this.number = number;
 		this.pricePerNight = pricePerNight;
@@ -42,11 +44,11 @@ public class RoomCreateDTO {
 		this.number = number;
 	}
 
-	public Double getPricePerNight() {
+	public BigDecimal getPricePerNight() {
 		return pricePerNight;
 	}
 
-	public void setPricePerNight(Double pricePerNight) {
+	public void setPricePerNight(BigDecimal pricePerNight) {
 		this.pricePerNight = pricePerNight;
 	}
 

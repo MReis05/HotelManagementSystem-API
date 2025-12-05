@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.services;
 
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,9 +69,14 @@ public class StayService {
 	@Transactional
 	public StayResponseDTO checkOut (Long id) {
 		Stay obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
+		
+		if(obj.getCheckOutDate() != null) {
+			throw new InvalidActionException("Estadia já foi finalizada");
+		}
+		
 		obj.setCheckOutDate(LocalDateTime.now());
 		
-		reservationService.peformCheckOut(obj);
+		reservationService.performCheckOut(obj);
 		obj = repository.save(obj);
 		return new StayResponseDTO(obj);
 	}
@@ -82,7 +88,7 @@ public class StayService {
 			throw new InvalidActionException("Não é possivel adicionar um consumo em uma estadia finalizada");
 		}
 		
-		Incidental incidental = new Incidental(dto.getName(), dto.getQuantity(), dto.getPrice(), (dto.getMoment() != null)? dto.getMoment(): LocalDateTime.now(), obj);
+		Incidental incidental = new Incidental(dto.getName(), dto.getQuantity(), dto.getPrice().setScale(2, RoundingMode.HALF_EVEN), (dto.getMoment() != null)? dto.getMoment(): LocalDateTime.now(), obj);
 		incidentalRepository.save(incidental);
 		return new IncidentalResponseDTO(incidental);
 	}

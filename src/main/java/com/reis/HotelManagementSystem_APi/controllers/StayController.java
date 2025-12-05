@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -58,10 +57,11 @@ public class StayController {
 		return ResponseEntity.ok().body(resp);
 	}
 	
-	@PutMapping(value = "/incidental")
-	public ResponseEntity<IncidentalResponseDTO> addIncidental(@RequestParam Long stayId, @Valid @RequestBody IncidentalRequestDTO dto){
+	@PostMapping(value = "/{id}/incidental")
+	public ResponseEntity<IncidentalResponseDTO> addIncidental(@PathVariable Long stayId, @Valid @RequestBody IncidentalRequestDTO dto){
 		IncidentalResponseDTO resp = service.addIncidental(stayId, dto);
-		return ResponseEntity.ok().body(resp);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
+		return ResponseEntity.created(uri).body(resp);
 	}
 	
 	@PostMapping(value= "/{id}/payment")

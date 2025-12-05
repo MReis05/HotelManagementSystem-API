@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,7 +35,8 @@ public class Reservation implements Serializable {
 	private Long id;
 	private LocalDate checkInDate;
 	private LocalDate checkOutDate;
-	private Double totalValue;
+	@Column(precision = 10, scale = 2)
+	private BigDecimal totalValue;
 	@Enumerated(EnumType.STRING)
 	private ReservationStatus status;
 	
@@ -86,11 +89,11 @@ public class Reservation implements Serializable {
 		this.checkOutDate = checkOutDate;
 	}
 
-	public Double getTotalValue() {
+	public BigDecimal getTotalValue() {
 		return totalValue;
 	}
 
-	public void setTotalValue(Double totalValue) {
+	public void setTotalValue(BigDecimal totalValue) {
 		this.totalValue = totalValue;
 	}
 

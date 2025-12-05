@@ -1,5 +1,7 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
+
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +13,7 @@ public class PaymentRequestDTO {
 	private PaymentType type;
 	@NotNull
 	@Positive
-	private Double amount;
+	private BigDecimal amount;
 	
 	@NotNull
 	@Positive
@@ -20,7 +22,7 @@ public class PaymentRequestDTO {
 	public PaymentRequestDTO() {
 	}
 	
-	public PaymentRequestDTO(PaymentType type, Double amount, Long reservationId) {
+	public PaymentRequestDTO(PaymentType type, BigDecimal amount, Long reservationId) {
 		this.type = type;
 		this.amount = amount;
 		this.reservationId = reservationId;
@@ -34,11 +36,11 @@ public class PaymentRequestDTO {
 		this.type = type;
 	}
 
-	public Double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Double amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

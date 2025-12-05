@@ -1,9 +1,11 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +24,8 @@ public class Incidental implements Serializable {
 	private Long id;
 	private String name;
 	private Integer quantity;
-	private Double price;
+	@Column(precision = 10, scale = 2)
+	private BigDecimal price;
 	private LocalDateTime moment;
 	
 	@ManyToOne
@@ -32,7 +35,7 @@ public class Incidental implements Serializable {
 	public Incidental() {
 	}
 
-	public Incidental(String name, Integer quantity, Double price, LocalDateTime moment, Stay stay) {
+	public Incidental(String name, Integer quantity, BigDecimal price, LocalDateTime moment, Stay stay) {
 		super();
 		this.name = name;
 		this.quantity = quantity;
@@ -57,11 +60,11 @@ public class Incidental implements Serializable {
 		this.quantity = quantity;
 	}
 
-	public Double getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(Double price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 
@@ -85,8 +88,8 @@ public class Incidental implements Serializable {
 		this.stay = stay;
 	}
 
-	public Double totalValue() {
-		return price * quantity;
+	public BigDecimal totalValue() {
+		return price.multiply(BigDecimal.valueOf(quantity));
 	}
 
 	@Override

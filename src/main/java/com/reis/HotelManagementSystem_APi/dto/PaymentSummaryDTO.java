@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.reis.HotelManagementSystem_APi.entities.Payment;
@@ -8,7 +9,7 @@ import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 
 public class PaymentSummaryDTO {
 
-	private Double amount;
+	private BigDecimal amount;
 	private Instant moment;
 	
 	private PaymentStatus status;
@@ -24,7 +25,7 @@ public class PaymentSummaryDTO {
 		this.type = obj.getType();
 	}
 
-	public Double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 

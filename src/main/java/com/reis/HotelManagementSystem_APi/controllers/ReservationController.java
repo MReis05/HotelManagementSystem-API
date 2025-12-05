@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,9 +56,15 @@ public class ReservationController {
 		return ResponseEntity.created(uri).body(resp);
 	}
 	
-	@PutMapping(value = "/{id}")
-	public ResponseEntity<ReservationResponseDTO> updateStatus(@PathVariable Long id, @RequestParam String action, @RequestBody(required = false) ReservationRequestDTO reservationDto){
-		ReservationResponseDTO resp = service.updateStatus(id, action, reservationDto);
+	@PutMapping(value = "/{id}/update")
+	public ResponseEntity<ReservationResponseDTO> updateReservation(@PathVariable Long id, @RequestBody ReservationRequestDTO dto){
+		ReservationResponseDTO resp = service.updateReservation(id, dto);
+		return ResponseEntity.ok().body(resp);
+	}
+	
+	@PatchMapping(value = "/{id}/cancel")
+	public ResponseEntity<ReservationResponseDTO> cancelReservation(@PathVariable Long id){
+		ReservationResponseDTO resp = service.cancelReservation(id);
 		return ResponseEntity.ok().body(resp);
 	}
 	

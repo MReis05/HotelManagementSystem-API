@@ -1,22 +1,23 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
+
 import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 
 public class RoomResponseDTO {
 
-	
 	private Long id;
 	private Integer number;
-	private Double pricePerNight;
+	private BigDecimal pricePerNight;
 	private String description;
 	private RoomStatus status;
 	private RoomType type;
-	
+
 	public RoomResponseDTO() {
 	}
-	
+
 	public RoomResponseDTO(Room room) {
 		this.id = room.getId();
 		this.number = room.getNumber();
@@ -42,11 +43,11 @@ public class RoomResponseDTO {
 		this.number = number;
 	}
 
-	public Double getPricePerNight() {
+	public BigDecimal getPricePerNight() {
 		return pricePerNight;
 	}
 
-	public void setPricePerNight(Double pricePerNight) {
+	public void setPricePerNight(BigDecimal pricePerNight) {
 		this.pricePerNight = pricePerNight;
 	}
 

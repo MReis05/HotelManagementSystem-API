@@ -1,5 +1,6 @@
 package com.reis.HotelManagementSystem_APi.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.reis.HotelManagementSystem_APi.entities.Incidental;
@@ -9,8 +10,8 @@ public class IncidentalResponseDTO {
 	private Long id;
 	private String name;
 	private Integer quantity;
-	private Double price;
-	private Double total;
+	private BigDecimal price;
+	private BigDecimal total;
 	private LocalDateTime moment;
 	
 	public IncidentalResponseDTO() {
@@ -37,11 +38,11 @@ public class IncidentalResponseDTO {
 		return quantity;
 	}
 
-	public Double getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public Double getTotal() {
+	public BigDecimal getTotal() {
 		return total;
 	}
 

@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.entities;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,7 +29,8 @@ public class Room implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Integer number;
-	private Double pricePerNight;
+	@Column(precision = 10, scale = 2)
+	private BigDecimal pricePerNight;
 	private String description;
 	@Enumerated(EnumType.STRING)
 	private RoomStatus status;
@@ -41,7 +44,7 @@ public class Room implements Serializable{
 	public Room() {
 	}
 	
-	public Room(Integer number, Double pricePerNight, String description, RoomStatus status, RoomType type) {
+	public Room(Integer number, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
 		super();
 		this.number = number;
 		this.pricePerNight = pricePerNight;
@@ -62,11 +65,11 @@ public class Room implements Serializable{
 		this.number = number;
 	}
 
-	public Double getPricePerNight() {
+	public BigDecimal getPricePerNight() {
 		return pricePerNight;
 	}
 
-	public void setPricePerNight(Double pricePerNight) {
+	public void setPricePerNight(BigDecimal pricePerNight) {
 		this.pricePerNight = pricePerNight;
 	}
 
