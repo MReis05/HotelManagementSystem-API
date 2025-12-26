@@ -173,12 +173,82 @@ public class ReservationServiceTest {
 	    });
 	    
 	   assertNotNull(exception.getMessage());
+	   assertEquals(RoomUnavailableException.class, exception.getClass());
 	    
 	   verify(repository, never()).save(any());
 	}
 	
 	@Test
-	@DisplayName("Should update the Reservation and calculate the new total value corretely and save")
+	@DisplayName("Should create reservation when dates DO NOT overlap with existing bookings")
+	void insertCheckAvailabilitySuccessCase() {
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		ReflectionTestUtils.setField(r1, "id", 1L);
+		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		ReflectionTestUtils.setField(g1, "id", 1L);
+		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 29), LocalDate.of(2025, 11, 30), ReservationStatus.CONFIRMADA);
+		r1.getReservations().add(rv1);
+		
+		ReservationRequestDTO dto = new ReservationRequestDTO();
+	    dto.setCheckInDate(LocalDate.of(2025, 11, 25));
+	    dto.setCheckOutDate(LocalDate.of(2025, 11, 28));
+	    dto.setGuestId(1L);
+	    dto.setRoomId(1L);
+	    
+	    when(guestRepository.findById(1L)).thenReturn(Optional.of(g1));
+	    when(roomRepository.findById(1L)).thenReturn(Optional.of(r1));
+	    
+	    when(repository.save(any(Reservation.class))).thenAnswer(invocation ->{
+	    	Reservation rv = invocation.getArgument(0);
+	    	rv.setId(1L);
+	    	return rv;
+	    });
+	    
+	    ReservationResponseDTO rvExpected = service.insert(dto);
+	    
+	    assertNotNull(rvExpected);
+	    
+	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
+	    verify(repository).save(reservationCaptor.capture());
+	    
+	    Reservation capturedReservation = reservationCaptor.getValue();
+	    
+	    assertEquals(new BigDecimal("570.00"), capturedReservation.getTotalValue());
+	    assertEquals(ReservationStatus.PENDENTE, capturedReservation.getStatus());
+	}
+	
+	@Test
+	@DisplayName("Should throw RoomUnavailableException when requested dates overlap with an existing reservation")
+	void insertCheckAvailabilityBadCase () {
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		ReflectionTestUtils.setField(r1, "id", 1L);
+		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		ReflectionTestUtils.setField(g1, "id", 1L);
+		Reservation rv1 = new Reservation(LocalDate.of(2025, 11, 26), LocalDate.of(2025, 11, 30), ReservationStatus.CONFIRMADA);
+		rv1.setId(1L);
+		r1.getReservations().add(rv1);
+		
+		ReservationRequestDTO dto = new ReservationRequestDTO();
+	    dto.setCheckInDate(LocalDate.of(2025, 11, 25));
+	    dto.setCheckOutDate(LocalDate.of(2025, 11, 28));
+	    dto.setGuestId(1L);
+	    dto.setRoomId(1L);
+	    
+	    when(guestRepository.findById(1L)).thenReturn(Optional.of(g1));
+	    when(roomRepository.findById(1L)).thenReturn(Optional.of(r1));
+	    
+	    RoomUnavailableException exception = assertThrows(RoomUnavailableException.class, () ->{
+	    	service.insert(dto);
+	    });
+	    
+	    assertNotNull(exception.getMessage());
+	    assertEquals(RoomUnavailableException.class, exception.getClass());
+	    
+	    verify(repository, never()).save(any());
+	    		
+	}
+	
+	@Test
+	@DisplayName("Should update the Reservation and calculate the new total value correctly and save reservation")
 	void updateSuccessCase() {
 		Reservation oldReservation = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
 		ReflectionTestUtils.setField(oldReservation, "id", 1L);
@@ -285,5 +355,51 @@ public class ReservationServiceTest {
 		Reservation reservationCaptured = reservationCaptor.getValue();
 		
 		assertEquals(ReservationStatus.CONFIRMADA, reservationCaptured.getStatus());
+	}
+	
+	@Test
+	@DisplayName("Should maintain reservation status as pending when payment is lower than 50%")
+	void confirmReservationBadCase() {
+		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.PENDENTE);
+		rv.setId(1L);
+		rv.setTotalValue(new BigDecimal("590.00"));
+		rv.getPayments().clear();
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		ReflectionTestUtils.setField(r1, "id", 1L);
+		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		ReflectionTestUtils.setField(g1, "id", 1L);
+		rv.setRoom(r1);
+		rv.setGuest(g1);
+		PaymentRequestDTO dto = new PaymentRequestDTO();
+		dto.setAmount(new BigDecimal("100.00"));
+		dto.setReservationId(1L);
+		dto.setType(PaymentType.PIX);
+		
+		when(repository.findById(1L)).thenReturn(Optional.of(rv));
+		
+		when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation ->{
+			Payment p = invocation.getArgument(0);
+			ReflectionTestUtils.setField(p, "id", 1L);
+			p.setStatus(PaymentStatus.APROVADO);
+			return p;
+		});
+		
+		 when(repository.save(any(Reservation.class))).thenAnswer(invocation ->{
+		    	Reservation r = invocation.getArgument(0);
+		    	r.setId(1L);
+		    	return r;
+		    });
+		
+		ReservationResponseDTO rvExpected = service.confirmReservation(1l, dto);
+		
+		assertNotNull(rvExpected);
+		
+		ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
+		verify(repository).save(reservationCaptor.capture());
+	
+		
+		Reservation reservationCaptured = reservationCaptor.getValue();
+		
+		assertEquals(ReservationStatus.PENDENTE, reservationCaptured.getStatus());
 	}
 }

@@ -138,9 +138,10 @@ public class ReservationService {
 		if(totalPaid.compareTo(minimumValue) >= 0) {
 			if (obj.getStatus() == ReservationStatus.PENDENTE) {
 				obj.setStatus(ReservationStatus.CONFIRMADA);
-				obj = repository.save(obj);
 			}
 		}
+		
+		obj = repository.save(obj);
 
 		return new ReservationResponseDTO(obj);
 	}
