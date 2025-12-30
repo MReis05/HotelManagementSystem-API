@@ -103,7 +103,7 @@ public class ReservationServiceTest {
 	
 	@Test
 	@DisplayName("Should throw ResourceNotFoundException when id doesn't exist")
-	void findByIdNotSuccessfulCase() {
+	void findByResourceNotFoundCase() {
 		when(repository.findById(99L)).thenReturn(Optional.empty());
 		
 		ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
