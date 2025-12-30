@@ -10,7 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +34,7 @@ import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.Stay;
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
@@ -42,6 +45,7 @@ import com.reis.HotelManagementSystem_APi.repositories.PaymentRepository;
 import com.reis.HotelManagementSystem_APi.repositories.ReservationRepository;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.ReservationService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.CheckOutException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.RoomUnavailableException;
@@ -67,25 +71,20 @@ public class ReservationServiceTest {
 	@Test
 	@DisplayName("Should return  List<ReservationSummaryDTO> when find objects with the right status")
 	void findByStatusSuccessCase() {
-		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
-		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
-		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
-		rv.setId(1l);
-		rv.setTotalValue(new BigDecimal("570.00"));
-		rv.setRoom(r1);
-		rv.setGuest(g1);
+		Reservation rv = createStandardReservation();
+		
 		List<Reservation> listExpected = List.of(rv);
 		when(repository.findByStatus(ReservationStatus.CONFIRMADA)).thenReturn(listExpected);
 		
-		List<ReservationSummaryDTO> listReceveid = service.findByStatus(ReservationStatus.CONFIRMADA.name());
+		List<ReservationSummaryDTO> listReceived = service.findByStatus(ReservationStatus.CONFIRMADA.name());
 		
-		assertNotNull(listReceveid);
+		assertNotNull(listReceived);
 		
-		assertEquals(1, listReceveid.size());
+		assertEquals(1, listReceived.size());
 		
-		assertEquals(rv.getId(), listReceveid.get(0).getId());
-		assertEquals(rv.getTotalValue(), listReceveid.get(0).getTotalValue());
-		assertEquals(rv.getStatus(), listReceveid.get(0).getStatus());
+		assertEquals(rv.getId(), listReceived.get(0).getId());
+		assertEquals(rv.getTotalValue(), listReceived.get(0).getTotalValue());
+		assertEquals(rv.getStatus(), listReceived.get(0).getStatus());
 		
 		verify(repository).findByStatus(ReservationStatus.CONFIRMADA);
 		
@@ -94,10 +93,10 @@ public class ReservationServiceTest {
 	@Test
 	@DisplayName("Should return an empty list when there aren't any objects with status")
 	void findByStatusEmptyCase() {
-		List<ReservationSummaryDTO> listReceveid = service.findByStatus("STATUS_INEXISTENTE");
+		List<ReservationSummaryDTO> listReceived = service.findByStatus("STATUS_INEXISTENTE");
 		
-		assertNotNull(listReceveid);
-		assertTrue(listReceveid.isEmpty());
+		assertNotNull(listReceived);
+		assertTrue(listReceived.isEmpty());
 		
 		verify(repository, never()).findByStatus(any());
 	}
@@ -112,6 +111,7 @@ public class ReservationServiceTest {
 		});
 		
 		assertNotNull(exception.getMessage());
+		assertEquals(ResourceNotFoundException.class, exception.getClass());
 		
 		verify(repository).findById(99L);
 	}	
@@ -250,14 +250,7 @@ public class ReservationServiceTest {
 	@Test
 	@DisplayName("Should update the Reservation and calculate the new total value correctly and save reservation")
 	void updateSuccessCase() {
-		Reservation oldReservation = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
-		ReflectionTestUtils.setField(oldReservation, "id", 1L);
-		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
-		ReflectionTestUtils.setField(r1, "id", 1L);
-		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
-		ReflectionTestUtils.setField(g1, "id", 1L);
-		oldReservation.setRoom(r1);
-		oldReservation.setGuest(g1);
+		Reservation oldReservation = createStandardReservation();
 		ReservationRequestDTO dto = new ReservationRequestDTO();
 	    dto.setCheckInDate(LocalDate.of(2025, 11, 29));
 	    dto.setCheckOutDate(LocalDate.of(2025, 11, 30));
@@ -265,14 +258,10 @@ public class ReservationServiceTest {
 	    dto.setRoomId(1L);
 	    
 	    when(repository.findById(1L)).thenReturn(Optional.of(oldReservation));
-	    when(roomRepository.findById(1L)).thenReturn(Optional.of(r1));
-	    when(guestRepository.findById(1L)).thenReturn(Optional.of(g1));
+	    when(roomRepository.findById(1L)).thenReturn(Optional.of(oldReservation.getRoom()));
+	    when(guestRepository.findById(1L)).thenReturn(Optional.of(oldReservation.getGuest()));
 	    
-	    when(repository.save(any(Reservation.class))).thenAnswer(invocation ->{
-	    	Reservation rv = invocation.getArgument(0);
-	    	rv.setId(1L);
-	    	return rv;
-	    });
+	    when(repository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 	    
 	    ReservationResponseDTO newReservation = service.updateReservation(1L, dto);
 	    
@@ -314,16 +303,7 @@ public class ReservationServiceTest {
 	@Test
 	@DisplayName("Should confirm reservation when payment is equal or greater than 50%")
 	void confirmReservationSuccessCase() {
-		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.PENDENTE);
-		rv.setId(1L);
-		rv.setTotalValue(new BigDecimal("590.00"));
-		rv.getPayments().clear();
-		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
-		ReflectionTestUtils.setField(r1, "id", 1L);
-		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
-		ReflectionTestUtils.setField(g1, "id", 1L);
-		rv.setRoom(r1);
-		rv.setGuest(g1);
+		Reservation rv = createStandardReservation();
 		PaymentRequestDTO dto = new PaymentRequestDTO();
 		dto.setAmount(new BigDecimal("300.00"));
 		dto.setReservationId(1L);
@@ -338,12 +318,7 @@ public class ReservationServiceTest {
 			return p;
 		});
 		
-		 when(repository.save(any(Reservation.class))).thenAnswer(invocation ->{
-		    	Reservation r = invocation.getArgument(0);
-		    	r.setId(1L);
-		    	return r;
-		    });
-		
+		 when(repository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		ReservationResponseDTO rvExpected = service.confirmReservation(1l, dto);
 		
 		assertNotNull(rvExpected);
@@ -360,16 +335,7 @@ public class ReservationServiceTest {
 	@Test
 	@DisplayName("Should maintain reservation status as pending when payment is lower than 50%")
 	void confirmReservationBadCase() {
-		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.PENDENTE);
-		rv.setId(1L);
-		rv.setTotalValue(new BigDecimal("590.00"));
-		rv.getPayments().clear();
-		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
-		ReflectionTestUtils.setField(r1, "id", 1L);
-		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
-		ReflectionTestUtils.setField(g1, "id", 1L);
-		rv.setRoom(r1);
-		rv.setGuest(g1);
+		Reservation rv = createStandardReservation();
 		PaymentRequestDTO dto = new PaymentRequestDTO();
 		dto.setAmount(new BigDecimal("100.00"));
 		dto.setReservationId(1L);
@@ -384,11 +350,7 @@ public class ReservationServiceTest {
 			return p;
 		});
 		
-		 when(repository.save(any(Reservation.class))).thenAnswer(invocation ->{
-		    	Reservation r = invocation.getArgument(0);
-		    	r.setId(1L);
-		    	return r;
-		    });
+		 when(repository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		
 		ReservationResponseDTO rvExpected = service.confirmReservation(1l, dto);
 		
@@ -401,5 +363,110 @@ public class ReservationServiceTest {
 		Reservation reservationCaptured = reservationCaptor.getValue();
 		
 		assertEquals(ReservationStatus.PENDENTE, reservationCaptured.getStatus());
+	}
+	
+	@Test
+	@DisplayName("Should perform checkout when balance is zero")
+	void performCheckOutSuccessCase() {
+		Reservation rv = new Reservation(LocalDate.now().minusDays(3), LocalDate.now(), ReservationStatus.EM_CURSO);
+	    rv.setId(1L);
+	    rv.setTotalValue(new BigDecimal("300.00"));
+	    rv.getPayments().clear();
+	    
+	    Room r1 = new Room(1, new BigDecimal("100.00"), "Quarto com Ventilador", RoomStatus.OCUPADO, RoomType.SOLTEIRO);
+	    rv.setRoom(r1);
+
+	    Payment pay = new Payment(Instant.now(), PaymentStatus.APROVADO, PaymentType.CARTAO_DE_CREDITO, new BigDecimal("300.00"), rv);
+	    rv.getPayments().add(pay);
+
+	    Stay stay = new Stay();
+	    stay.setReservation(rv);
+	    stay.setCheckOutDate(LocalDateTime.now());
+
+	    when(repository.findById(1L)).thenReturn(Optional.of(rv));
+
+	    service.performCheckOut(stay);
+
+	    assertEquals(ReservationStatus.CONCLUIDA, rv.getStatus());
+	    assertEquals(RoomStatus.LIMPEZA, rv.getRoom().getStatus());
+	}
+	
+	@Test
+	@DisplayName("Should throw a CheckOutException when there are pending values to be paid")
+	void performCheckOutBadCase() {
+		Reservation rv = new Reservation(LocalDate.now().minusDays(3), LocalDate.now(), ReservationStatus.EM_CURSO);
+	    rv.setId(1L);
+	    rv.setTotalValue(new BigDecimal("300.00"));
+	    rv.getPayments().clear();
+	    
+	    Room r1 = new Room(1, new BigDecimal("100.00"), "Quarto com Ventilador", RoomStatus.OCUPADO, RoomType.SOLTEIRO);
+	    rv.setRoom(r1);
+
+	    Payment pay = new Payment(Instant.now(), PaymentStatus.APROVADO, PaymentType.CARTAO_DE_CREDITO, new BigDecimal("200.00"), rv);
+	    rv.getPayments().add(pay);
+
+	    Stay stay = new Stay();
+	    stay.setReservation(rv);
+	    stay.setCheckOutDate(LocalDateTime.now());
+
+	    when(repository.findById(1L)).thenReturn(Optional.of(rv));
+
+	    CheckOutException exception = assertThrows(CheckOutException.class, () -> {
+	    	service.performCheckOut(stay);
+	    });
+	    
+	    assertNotNull(exception.getMessage());
+	    assertEquals(CheckOutException.class, exception.getClass());
+	}
+	
+	@Test
+	@DisplayName("Should cancel reservation and update status to CANCELADA")
+	void cancelReservationSuccessCase() {
+		Reservation rv = createStandardReservation();
+		
+		when(repository.findById(1L)).thenReturn(Optional.of(rv));
+		
+		when(repository.save(any(Reservation.class))).thenAnswer(invocation  -> invocation.getArgument(0));
+		ReservationResponseDTO rvExpected = service.cancelReservation(1L);
+		
+		assertNotNull(rvExpected);
+		
+		assertEquals(ReservationStatus.CANCELADA, rvExpected.getStatus());
+		
+		verify(repository).save(any(Reservation.class));
+	}
+	
+	@Test
+	@DisplayName("Should update reservation status to EM_CURSO and room status to OCUPADO")
+	void checkInStaySuccessCase() {
+		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.CONFIRMADA);
+		rv.setId(1L);
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		ReflectionTestUtils.setField(r1, "id", 1L);
+		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		ReflectionTestUtils.setField(g1, "id", 1L);
+		rv.setRoom(r1);
+		rv.setGuest(g1);
+		
+		when(repository.findById(1L)).thenReturn(Optional.of(rv));
+
+		Reservation rvExpected = service.checkInStay(1L);
+		
+		assertNotNull(rvExpected);
+		assertEquals(ReservationStatus.EM_CURSO, rvExpected.getStatus());
+		assertEquals(RoomStatus.OCUPADO, rvExpected.getRoom().getStatus());
+	}
+	
+	private Reservation createStandardReservation() {
+		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.PENDENTE);
+		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		ReflectionTestUtils.setField(r1, "id", 1L);
+		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		ReflectionTestUtils.setField(g1, "id", 1L);
+		rv.setId(1L);
+		rv.setTotalValue(new BigDecimal("570.00"));
+		rv.setRoom(r1);
+		rv.setGuest(g1);
+		return rv;
 	}
 }
