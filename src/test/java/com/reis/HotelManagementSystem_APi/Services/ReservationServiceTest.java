@@ -138,9 +138,9 @@ public class ReservationServiceTest {
 	    	return rv;
 	    });
 	    
-	    ReservationResponseDTO rvExpected = service.insert(dto);
+	    ReservationResponseDTO rvReceived = service.insert(dto);
 	    
-	    assertNotNull(rvExpected);
+	    assertNotNull(rvReceived);
 	    
 	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
 	    verify(repository).save(reservationCaptor.capture());
@@ -203,9 +203,9 @@ public class ReservationServiceTest {
 	    	return rv;
 	    });
 	    
-	    ReservationResponseDTO rvExpected = service.insert(dto);
+	    ReservationResponseDTO rvReceived = service.insert(dto);
 	    
-	    assertNotNull(rvExpected);
+	    assertNotNull(rvReceived);
 	    
 	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
 	    verify(repository).save(reservationCaptor.capture());
@@ -319,9 +319,9 @@ public class ReservationServiceTest {
 		});
 		
 		 when(repository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
-		ReservationResponseDTO rvExpected = service.confirmReservation(1l, dto);
+		ReservationResponseDTO rvReceived = service.confirmReservation(1l, dto);
 		
-		assertNotNull(rvExpected);
+		assertNotNull(rvReceived);
 		
 		ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
 		verify(repository).save(reservationCaptor.capture());
@@ -352,9 +352,9 @@ public class ReservationServiceTest {
 		
 		 when(repository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		
-		ReservationResponseDTO rvExpected = service.confirmReservation(1l, dto);
+		ReservationResponseDTO rvReceived = service.confirmReservation(1l, dto);
 		
-		assertNotNull(rvExpected);
+		assertNotNull(rvReceived);
 		
 		ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
 		verify(repository).save(reservationCaptor.capture());
@@ -427,11 +427,11 @@ public class ReservationServiceTest {
 		when(repository.findById(1L)).thenReturn(Optional.of(rv));
 		
 		when(repository.save(any(Reservation.class))).thenAnswer(invocation  -> invocation.getArgument(0));
-		ReservationResponseDTO rvExpected = service.cancelReservation(1L);
+		ReservationResponseDTO rvReceived = service.cancelReservation(1L);
 		
-		assertNotNull(rvExpected);
+		assertNotNull(rvReceived);
 		
-		assertEquals(ReservationStatus.CANCELADA, rvExpected.getStatus());
+		assertEquals(ReservationStatus.CANCELADA, rvReceived.getStatus());
 		
 		verify(repository).save(any(Reservation.class));
 	}
@@ -450,11 +450,11 @@ public class ReservationServiceTest {
 		
 		when(repository.findById(1L)).thenReturn(Optional.of(rv));
 
-		Reservation rvExpected = service.checkInStay(1L);
+		Reservation rvReceived = service.checkInStay(1L);
 		
-		assertNotNull(rvExpected);
-		assertEquals(ReservationStatus.EM_CURSO, rvExpected.getStatus());
-		assertEquals(RoomStatus.OCUPADO, rvExpected.getRoom().getStatus());
+		assertNotNull(rvReceived);
+		assertEquals(ReservationStatus.EM_CURSO, rvReceived.getStatus());
+		assertEquals(RoomStatus.OCUPADO, rvReceived.getRoom().getStatus());
 	}
 	
 	private Reservation createStandardReservation() {
