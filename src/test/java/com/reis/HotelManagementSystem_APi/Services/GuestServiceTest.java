@@ -17,7 +17,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -110,6 +109,7 @@ public class GuestServiceTest {
 		
 		assertNotNull(guestReceived);
 		assertEquals(1L, guestReceived.getId());
+		assertEquals("John Green", guestReceived.getName());
 		
 		verify(repository).save(any(Guest.class));
 	}
@@ -182,17 +182,12 @@ public class GuestServiceTest {
 		
 		assertNotNull(g1Received);
 		
-		ArgumentCaptor<Guest> guestCaptor = ArgumentCaptor.forClass(Guest.class);
-		verify(repository).save(guestCaptor.capture());
+		assertEquals(g1.getId(), g1Received.getId());
+		assertEquals("John Black", g1Received.getName());
+		assertEquals("Avenida Morumbi", g1Received.getAddress().getStreet());
 		
-		Guest guestCaptured = guestCaptor.getValue();
-		
-		assertEquals(g1.getId(), guestCaptured.getId());
-		assertEquals("John Black", guestCaptured.getName());
-		assertEquals("Avenida Morumbi", guestCaptured.getAddress().getStreet());
-		
-		assertEquals("john@gmail.com", guestCaptured.getEmail());
-		assertEquals("05606-100", guestCaptured.getAddress().getCep());
+		assertEquals("john@gmail.com", g1Received.getEmail());
+		assertEquals("05606-100", g1Received.getAddress().getCep());
 	}
 	
 	@Test

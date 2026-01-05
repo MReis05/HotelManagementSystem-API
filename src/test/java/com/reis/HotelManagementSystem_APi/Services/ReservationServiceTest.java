@@ -19,7 +19,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -142,13 +141,8 @@ public class ReservationServiceTest {
 	    
 	    assertNotNull(rvReceived);
 	    
-	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-	    verify(repository).save(reservationCaptor.capture());
-	    
-	    Reservation capturedReservation = reservationCaptor.getValue();
-	    
-	    assertEquals(new BigDecimal("570.00"), capturedReservation.getTotalValue());
-	    assertEquals(ReservationStatus.PENDENTE, capturedReservation.getStatus());
+	    assertEquals(new BigDecimal("570.00"), rvReceived.getTotalValue());
+	    assertEquals(ReservationStatus.PENDENTE, rvReceived.getStatus());
 	}
 	
 	@Test
@@ -207,13 +201,8 @@ public class ReservationServiceTest {
 	    
 	    assertNotNull(rvReceived);
 	    
-	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-	    verify(repository).save(reservationCaptor.capture());
-	    
-	    Reservation capturedReservation = reservationCaptor.getValue();
-	    
-	    assertEquals(new BigDecimal("570.00"), capturedReservation.getTotalValue());
-	    assertEquals(ReservationStatus.PENDENTE, capturedReservation.getStatus());
+	    assertEquals(new BigDecimal("570.00"), rvReceived.getTotalValue());
+	    assertEquals(ReservationStatus.PENDENTE, rvReceived.getStatus());
 	}
 	
 	@Test
@@ -267,15 +256,10 @@ public class ReservationServiceTest {
 	    
 	    assertNotNull(newReservation);
 	    
-	    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-	    verify(repository).save(reservationCaptor.capture());
-	    
-	    Reservation capturedReservation = reservationCaptor.getValue();
-	    
-	    assertEquals(new BigDecimal("190.00"), capturedReservation.getTotalValue());
-	    assertEquals(ReservationStatus.PENDENTE, capturedReservation.getStatus());
-	    assertEquals(1L, capturedReservation.getRoom().getId());
-	    assertEquals(1L, capturedReservation.getGuest().getId());
+	    assertEquals(new BigDecimal("190.00"), newReservation.getTotalValue());
+	    assertEquals(ReservationStatus.PENDENTE, newReservation.getStatus());
+	    assertEquals(1L, newReservation.getRoomSummaryDTO().getId());
+	    assertEquals(1L, newReservation.getGuestSummaryDTO().getId());
 	}
 	
 	@Test
@@ -323,13 +307,7 @@ public class ReservationServiceTest {
 		
 		assertNotNull(rvReceived);
 		
-		ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-		verify(repository).save(reservationCaptor.capture());
-	
-		
-		Reservation reservationCaptured = reservationCaptor.getValue();
-		
-		assertEquals(ReservationStatus.CONFIRMADA, reservationCaptured.getStatus());
+		assertEquals(ReservationStatus.CONFIRMADA, rvReceived.getStatus());
 	}
 	
 	@Test
@@ -356,13 +334,7 @@ public class ReservationServiceTest {
 		
 		assertNotNull(rvReceived);
 		
-		ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-		verify(repository).save(reservationCaptor.capture());
-	
-		
-		Reservation reservationCaptured = reservationCaptor.getValue();
-		
-		assertEquals(ReservationStatus.PENDENTE, reservationCaptured.getStatus());
+		assertEquals(ReservationStatus.PENDENTE, rvReceived.getStatus());
 	}
 	
 	@Test
