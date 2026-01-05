@@ -114,6 +114,7 @@ public class ReservationServiceTest {
 		
 		verify(repository).findById(99L);
 	}	
+	
 	@Test
 	@DisplayName("Should calculate total value correctly and save reservation")
 	void insertSuccessCase() {
