@@ -89,6 +89,7 @@ public class StayService {
 		}
 		
 		Incidental incidental = new Incidental(dto.getName(), dto.getQuantity(), dto.getPrice().setScale(2, RoundingMode.HALF_EVEN), (dto.getMoment() != null)? dto.getMoment(): LocalDateTime.now(), obj);
+		obj.getIncidentals().add(incidental);
 		incidentalRepository.save(incidental);
 		return new IncidentalResponseDTO(incidental);
 	}
