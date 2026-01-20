@@ -1,7 +1,12 @@
 package com.reis.HotelManagementSystem_APi.Controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reis.HotelManagementSystem_APi.controllers.GuestController;
+import com.reis.HotelManagementSystem_APi.dto.AddressDTO;
+import com.reis.HotelManagementSystem_APi.dto.GuestRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
@@ -51,7 +58,7 @@ public class GuestControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
 				.andExpect(jsonPath("$[0].name").value("John Green"))
-				.andExpect(jsonPath("$[0].cpf").value("99999999901"))
+				.andExpect(jsonPath("$[0].cpf").value("14462660013"))
 				.andExpect(jsonPath("$[0].birthDate").value("2003-01-05"));
 	}
 	
@@ -70,25 +77,85 @@ public class GuestControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1L))
 				.andExpect(jsonPath("$.name").value("John Green"))
-				.andExpect(jsonPath("$.cpf").value("99999999901"))
+				.andExpect(jsonPath("$.cpf").value("14462660013"))
 				.andExpect(jsonPath("$.birthDate").value("2003-01-05"));
 		
 	}
 	
 	@Test
-	@DisplayName("Should return 404 Status when doesn't find a Guest")
+	@DisplayName("Should return 404 Not Found when doesn't find a Guest")
 	void FindByIdResourceNotFoundCase() throws Exception {
-		when(service.findById(99L)).thenThrow(new ResourceNotFoundException(99L));
+		Long guestId = 99L;
+		when(service.findById(guestId)).thenThrow(new ResourceNotFoundException(guestId));
 		
 		mockMvc.perform(
-				get("/guests/" + 99L)
+				get("/guests/" + guestId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 201 Created and the location Header")
+	void insertSuccessCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("John Green", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), address);
+		
+		GuestResponseDTO outputDTO = new GuestResponseDTO(createStandardGuest());
+		
+		when(service.insert(any(GuestRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/guests")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").exists())
+				.andExpect(jsonPath("$.name").value("John Green"))
+				.andExpect(header().exists("Location"));
+	}
+	
+	@Test
+	@DisplayName("Shoud return 200 Ok and update Guest")
+	void updateSuccessCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("John Blue", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 02), address);
+		
+		GuestResponseDTO outputDTO = new GuestResponseDTO(createStandardGuest());
+		ReflectionTestUtils.setField(outputDTO, "name", "John Blue");
+		
+		when(service.update(eq(1L), any(GuestRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				put("/guests/{id}", 1L)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1L))
+				.andExpect(jsonPath("$.name").value("John Blue"));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Guest")
+	void updateResourceNotFound() throws Exception {
+		Long guestId = 99L;
+		when(service.update(eq(guestId), any())).thenThrow(new ResourceNotFoundException(guestId));
+		
+		mockMvc.perform(
+				put("/guest/{id}", guestId)
 				.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isNotFound());
 	}
 	
 	private Guest createStandardGuest() {
-		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
+		Guest g1 = new Guest("John Green", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
 		ReflectionTestUtils.setField(g1, "id", 1L);
 		return g1;
 	}
