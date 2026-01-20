@@ -24,7 +24,7 @@ import com.reis.HotelManagementSystem_APi.services.RoomService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/room")
+@RequestMapping(value = "/rooms")
 public class RoomController {
 
 	@Autowired

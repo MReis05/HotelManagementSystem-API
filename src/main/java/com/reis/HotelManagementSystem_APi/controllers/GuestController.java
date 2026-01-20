@@ -22,7 +22,7 @@ import com.reis.HotelManagementSystem_APi.services.GuestService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(value ="/guest")
+@RequestMapping(value ="/guests")
 public class GuestController {
 	
 	@Autowired

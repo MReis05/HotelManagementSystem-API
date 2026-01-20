@@ -26,7 +26,7 @@ import com.reis.HotelManagementSystem_APi.services.StayService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(value ="/stay")
+@RequestMapping(value ="/stays")
 public class StayController {
 
 	@Autowired

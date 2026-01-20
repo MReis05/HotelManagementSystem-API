@@ -25,7 +25,7 @@ import com.reis.HotelManagementSystem_APi.services.ReservationService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/reservation")
+@RequestMapping(value = "/reservations")
 public class ReservationController {
 
 	@Autowired
