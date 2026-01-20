@@ -1,8 +1,10 @@
-package com.reis.HotelManagementSystem_APi.Controller;
+package com.reis.HotelManagementSystem_APi.Controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -30,6 +32,7 @@ import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.services.GuestService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
 @WebMvcTest(GuestController.class)
@@ -84,7 +87,7 @@ public class GuestControllerTest {
 	
 	@Test
 	@DisplayName("Should return 404 Not Found when doesn't find a Guest")
-	void FindByIdResourceNotFoundCase() throws Exception {
+	void findByIdResourceNotFoundCase() throws Exception {
 		Long guestId = 99L;
 		when(service.findById(guestId)).thenThrow(new ResourceNotFoundException(guestId));
 		
@@ -119,7 +122,7 @@ public class GuestControllerTest {
 	}
 	
 	@Test
-	@DisplayName("Shoud return 200 Ok and update Guest")
+	@DisplayName("Should return 200 OK when updating guest")
 	void updateSuccessCase() throws Exception {
 		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
 		GuestRequestDTO inputDTO = new GuestRequestDTO("John Blue", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 02), address);
@@ -143,15 +146,61 @@ public class GuestControllerTest {
 	
 	@Test
 	@DisplayName("Should return 404 Not Found when doesn't find Guest")
-	void updateResourceNotFound() throws Exception {
+	void updateResourceNotFoundCase() throws Exception {
 		Long guestId = 99L;
+		
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("John Blue", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 02), address);
+		
+		GuestResponseDTO outputDTO = new GuestResponseDTO(createStandardGuest());
+		ReflectionTestUtils.setField(outputDTO, "name", "John Blue");
+		
 		when(service.update(eq(guestId), any())).thenThrow(new ResourceNotFoundException(guestId));
 		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
 		mockMvc.perform(
-				put("/guest/{id}", guestId)
+				put("/guests/{id}", guestId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 204 No Content when deleting Guest")
+	void deleteSuccessCase() throws Exception {
+		mockMvc.perform(
+				delete("/guests/" + 1L)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isNoContent());
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Guest")
+	void deleteResourceNotFoundCase() throws Exception {
+		Long guestId = 99L;
+		doThrow(new ResourceNotFoundException(guestId)).when(service).delete(guestId);
+		
+		mockMvc.perform(
+				delete("/guests/" + guestId)
 				.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request when deleting guest with dependencies")
+	void deleteIntegrityViolationCase() throws Exception {
+		Long guestId = 99L;
+		doThrow(new DatabaseException("Integrity Violation")).when(service).delete(guestId);
+		
+		mockMvc.perform(
+				delete("/guests/" + guestId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isBadRequest());
 	}
 	
 	private Guest createStandardGuest() {
