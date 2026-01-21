@@ -67,7 +67,7 @@ public class GuestControllerTest {
 	
 	
 	@Test
-	@DisplayName("Should return 200 OK status and Object Guest")
+	@DisplayName("Should return 200 OK status and Guest")
 	void findByIdSuccessCase() throws Exception {
 		GuestResponseDTO dto = new GuestResponseDTO(createStandardGuest());
 		
