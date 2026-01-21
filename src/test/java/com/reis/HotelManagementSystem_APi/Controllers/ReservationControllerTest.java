@@ -1,7 +1,10 @@
 package com.reis.HotelManagementSystem_APi.Controllers;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reis.HotelManagementSystem_APi.controllers.ReservationController;
+import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.ReservationResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationSummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
@@ -29,6 +34,7 @@ import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.services.ReservationService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
 @WebMvcTest(ReservationController.class)
 public class ReservationControllerTest {
@@ -55,8 +61,8 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].checkInDate").value("2025-11-25"))
-				.andExpect(jsonPath("$[0].checkOutDate").value("2025-11-28"))
+				.andExpect(jsonPath("$[0].checkInDate").value("2026-02-01"))
+				.andExpect(jsonPath("$[0].checkOutDate").value("2026-02-04"))
 				.andExpect(jsonPath("$[0].status").value(dto.getStatus().name()))
 				.andExpect(jsonPath("$[0].totalValue").value(570.00));
 	}
@@ -74,14 +80,79 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].checkInDate").value("2025-11-25"))
-				.andExpect(jsonPath("$[0].checkOutDate").value("2025-11-28"))
+				.andExpect(jsonPath("$[0].checkInDate").value("2026-02-01"))
+				.andExpect(jsonPath("$[0].checkOutDate").value("2026-02-04"))
 				.andExpect(jsonPath("$[0].status").value(dto.getStatus().name()))
-				.andExpect(jsonPath("$[0].totalValue").value(570.00));
+				.andExpect(jsonPath("$[0].totalValue").value(570.00))
+				.andExpect(jsonPath("$[0].roomSummaryDTO.status").value(dto.getRoomSummaryDTO().getStatus().name()))
+				.andExpect(jsonPath("$[0].guestSummaryDTO.name").value(dto.getGuestSummaryDTO().getName()));
+	}
+	
+	@Test
+	@DisplayName("Should return 200 OK and Reservation")
+	void findByIdSuccessCase() throws Exception {
+		Long reservationId = 1L;
+		ReservationResponseDTO dto = new ReservationResponseDTO(createStandardReservation());
+		
+		when(service.findById(reservationId)).thenReturn(dto);
+		
+		mockMvc.perform(
+				get("/reservations/" + reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(reservationId))
+				.andExpect(jsonPath("$.checkInDate").value("2026-02-01"))
+				.andExpect(jsonPath("$.checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$.status").value(dto.getStatus().name()))
+				.andExpect(jsonPath("$.totalValue").value(570.00))
+				.andExpect(jsonPath("$.roomSummaryDTO.status").value(dto.getRoomSummaryDTO().getStatus().name()))
+				.andExpect(jsonPath("$.guestSummaryDTO.name").value(dto.getGuestSummaryDTO().getName()));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Reservation")
+	void findByIdResourceNotFoundCase() throws Exception {
+		Long reservationId = 99L;
+		
+		when(service.findById(reservationId)).thenThrow(new ResourceNotFoundException(reservationId));
+		
+		mockMvc.perform(
+				get("/reservations/" + reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 201 Created and the location header")
+	void insertSuccessCase() throws Exception {
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04));
+		
+		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
+		
+		when(service.insert(any(ReservationRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/reservations")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").exists())
+				.andExpect(jsonPath("$.checkInDate").value("2026-02-01"))
+				.andExpect(jsonPath("$.checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$.status").value(outputDTO.getStatus().name()))
+				.andExpect(jsonPath("$.totalValue").value(570.00))
+				.andExpect(jsonPath("$.roomSummaryDTO.status").value(outputDTO.getRoomSummaryDTO().getStatus().name()))
+				.andExpect(jsonPath("$.guestSummaryDTO.name").value(outputDTO.getGuestSummaryDTO().getName()))
+				.andExpect(header().exists("Location"));
 	}
 	
 	private Reservation createStandardReservation() {
-		Reservation rv = new Reservation(LocalDate.of(2025, 11, 25), LocalDate.of(2025, 11, 28), ReservationStatus.PENDENTE);
+		Reservation rv = new Reservation(LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04), ReservationStatus.PENDENTE);
 		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
 		ReflectionTestUtils.setField(r1, "id", 1L);
 		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
