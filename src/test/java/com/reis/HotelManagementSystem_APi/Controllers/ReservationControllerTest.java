@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,13 +27,18 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reis.HotelManagementSystem_APi.controllers.ReservationController;
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentSummaryDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.ReservationSummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
+import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
+import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
+import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
@@ -191,9 +198,9 @@ public class ReservationControllerTest {
 	
 	@Test
 	@DisplayName("Should return 200 OK when updating Reservation")
-	void updateSuccessCase() throws Exception {
+	void updateReservationSuccessCase() throws Exception {
 		Long reservationId = 1L;
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));;
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));
 		
 		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
 		ReflectionTestUtils.setField(outputDTO, "checkInDate", LocalDate.of(2026, 02, 06));
@@ -215,7 +222,7 @@ public class ReservationControllerTest {
 	
 	@Test
 	@DisplayName("Should return 404 Not Found when doesn't find Reservation")
-	void updateResourceNotFoundCase() throws Exception {
+	void updateReservationResourceNotFoundCase() throws Exception {
 		Long reservationId = 1L;
 		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));;
 		
@@ -232,8 +239,8 @@ public class ReservationControllerTest {
 	}
 	
 	@Test
-	@DisplayName("Shoud return 400 Bad Request when reservation is already completed or canceled")
-	void updateInvalidActionCase() throws Exception {
+	@DisplayName("Should return 400 Bad Request when reservation is already completed or canceled")
+	void updateReservationInvalidActionCase() throws Exception {
 		Long reservationId = 1L;
 		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));;
 		
@@ -247,6 +254,87 @@ public class ReservationControllerTest {
 				.content(jsonBody)
 				)
 				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@DisplayName("Should return 200 OK when canceling Reservation")
+	void cancelReservationSuccessCase() throws Exception {
+		Long reservationId = 1L;
+		
+		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
+		ReflectionTestUtils.setField(outputDTO, "status", ReservationStatus.CANCELADA);
+		
+		when(service.cancelReservation(eq(reservationId))).thenReturn(outputDTO);
+		
+		mockMvc.perform(
+				patch("/reservations/{id}/cancel", reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value(ReservationStatus.CANCELADA.name()));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Reservation")
+	void cancelReservationResourceNotFoundCase() throws Exception {
+		Long reservationId = 1L;
+		
+		when(service.cancelReservation(eq(reservationId))).thenThrow(new ResourceNotFoundException(reservationId));
+	
+		mockMvc.perform(
+				patch("/reservations/{id}/cancel", reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 200 OK when confirming Reservation")
+	void confirmReservationSuccessCase() throws Exception {
+		Long reservationId = 1L;
+		Payment payment = new Payment(Instant.now(), PaymentStatus.APROVADO, PaymentType.PIX, new BigDecimal("300.00"), createStandardReservation());
+		
+		PaymentRequestDTO inputDTO = new PaymentRequestDTO(payment.getType(), payment.getAmount(), payment.getReservation().getId());
+		
+		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
+		outputDTO.getPaymentsSummary().add(new PaymentSummaryDTO(payment));
+		ReflectionTestUtils.setField(outputDTO, "status", ReservationStatus.CONFIRMADA);
+		
+		when(service.confirmReservation(eq(reservationId), any(PaymentRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				put("/reservations/{id}/payment", reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value(outputDTO.getStatus().name()))
+				.andExpect(jsonPath("$.paymentsSummary[0].moment").exists())
+				.andExpect(jsonPath("$.paymentsSummary[0].amount").value(300.00))
+				.andExpect(jsonPath("$.paymentsSummary[0].status").value(outputDTO.getPaymentsSummary().get(0).getStatus().name()))
+				.andExpect(jsonPath("$.paymentsSummary[0].type").value(outputDTO.getPaymentsSummary().get(0).getType().name()));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Reservation")
+	void confirmReservationResourceNotFoundCase() throws Exception {
+		Long reservationId = 99L;
+		Payment payment = new Payment(Instant.now(), PaymentStatus.APROVADO, PaymentType.PIX, new BigDecimal("300.00"), createStandardReservation());
+		
+		PaymentRequestDTO inputDTO = new PaymentRequestDTO(payment.getType(), payment.getAmount(), payment.getReservation().getId());
+		
+		when(service.confirmReservation(eq(reservationId), any(PaymentRequestDTO.class))).thenThrow(new ResourceNotFoundException(reservationId));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				put("/reservations/{id}/payment", reservationId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isNotFound());
 	}
 	
 	private Reservation createStandardReservation() {
