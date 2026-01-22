@@ -1,7 +1,11 @@
 package com.reis.HotelManagementSystem_APi.Controllers;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reis.HotelManagementSystem_APi.controllers.StayController;
+import com.reis.HotelManagementSystem_APi.dto.StayRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StaySummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
@@ -33,6 +38,8 @@ import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.services.StayService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.CheckInDateException;
+import com.reis.HotelManagementSystem_APi.services.exceptions.InvalidActionException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
 @WebMvcTest(StayController.class)
@@ -100,6 +107,102 @@ public class StayControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 201 Created and the location header")
+	void checkInSuccessCase() throws Exception {
+		StayRequestDTO inputDTO = new StayRequestDTO();
+		inputDTO.setReservationId(1L);
+		inputDTO.setCheckInDate(LocalDateTime.of(2026, 01, 22, 14, 00));
+		
+		StayResponseDTO outputDTO = new StayResponseDTO(createStandardStay());
+		outputDTO.getIncidentalsList().clear();
+		ReflectionTestUtils.setField(outputDTO, "totalValue", new BigDecimal("760.00"));
+		
+		when(service.checkIn(any(StayRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").exists())
+				.andExpect(jsonPath("$.reservationId").value(1L))
+				.andExpect(jsonPath("$.checkInDate").value("2026-01-22T14:00:00"))
+				.andExpect(jsonPath("$.totalValue").value(760.00))
+				.andExpect(jsonPath("$.guestSummaryDTO.name").value("John Green"))
+				.andExpect(header().exists("Location"));
+	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request when Stay checkInDate is not equal with Reservation CheckInDate")
+	void checkInDateExceptionCase() throws Exception {
+		StayRequestDTO inputDTO = new StayRequestDTO();
+		inputDTO.setCheckInDate(LocalDateTime.of(2026, 01, 23, 14, 00));
+		
+		StayResponseDTO outputDTO = new StayResponseDTO(createStandardStay());
+		
+		when(service.checkIn(any(StayRequestDTO.class))).thenThrow(new CheckInDateException(inputDTO.getCheckInDate(), outputDTO.getCheckInDate().toLocalDate()));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@DisplayName("Should return 200 OK when CheckOut is completed")
+	void checkOutSuccessCase() throws Exception {
+		Long stayId = 1L;
+		
+		StayResponseDTO dto = new StayResponseDTO(createStandardStay());
+		ReflectionTestUtils.setField(dto, "checkOutDate", LocalDateTime.of(2026, 01, 26, 12, 00));
+		
+		when(service.checkOut(stayId)).thenReturn(dto);
+		
+		mockMvc.perform(
+				patch("/stays/{id}/checkout", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.checkOutDate").value("2026-01-26T12:00:00"));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn's find Stay")
+	void checkOutResourceNotFoundCase() throws Exception {
+		Long stayId = 99L;
+		
+		when(service.checkOut(stayId)).thenThrow(new ResourceNotFoundException(stayId));
+		
+		mockMvc.perform(
+				patch("/stays/{id}/checkout", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+
+	@Test
+	@DisplayName("Should return 400 Bad Request when Stay is already completed")
+	void checkOutInvalidActionCase() throws Exception {
+		Long stayId = 99L;
+		
+		when(service.checkOut(stayId)).thenThrow(new InvalidActionException("Stay is already completed"));
+		
+		mockMvc.perform(
+				patch("/stays/{id}/checkout", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				)
+				.andExpect(status().isBadRequest());
 	}
 	
 	private Stay createStandardStay() {
