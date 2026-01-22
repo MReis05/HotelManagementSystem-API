@@ -58,15 +58,15 @@ public class StayController {
 	}
 	
 	@PostMapping(value = "/{id}/incidental")
-	public ResponseEntity<IncidentalResponseDTO> addIncidental(@PathVariable Long stayId, @Valid @RequestBody IncidentalRequestDTO dto){
+	public ResponseEntity<IncidentalResponseDTO> addIncidental(@PathVariable("id") Long stayId, @Valid @RequestBody IncidentalRequestDTO dto){
 		IncidentalResponseDTO resp = service.addIncidental(stayId, dto);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
 		return ResponseEntity.created(uri).body(resp);
 	}
 	
 	@PostMapping(value= "/{id}/payment")
-	public ResponseEntity<PaymentResponseDTO> makePayment(@PathVariable Long id, @Valid @RequestBody PaymentRequestDTO dto){
-		PaymentResponseDTO resp = service.makePayment(id, dto);
+	public ResponseEntity<PaymentResponseDTO> makePayment(@PathVariable("id") Long stayId, @Valid @RequestBody PaymentRequestDTO dto){
+		PaymentResponseDTO resp = service.makePayment(stayId, dto);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(resp.getId()).toUri();
 		return ResponseEntity.created(uri).body(resp); 
 	}

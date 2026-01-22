@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.Controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,15 +27,22 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reis.HotelManagementSystem_APi.controllers.StayController;
+import com.reis.HotelManagementSystem_APi.dto.IncidentalRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.IncidentalResponseDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentRequestDTO;
+import com.reis.HotelManagementSystem_APi.dto.PaymentResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayRequestDTO;
 import com.reis.HotelManagementSystem_APi.dto.StayResponseDTO;
 import com.reis.HotelManagementSystem_APi.dto.StaySummaryDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.entities.Incidental;
+import com.reis.HotelManagementSystem_APi.entities.Payment;
 import com.reis.HotelManagementSystem_APi.entities.Reservation;
 import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.entities.Stay;
+import com.reis.HotelManagementSystem_APi.entities.enums.PaymentStatus;
+import com.reis.HotelManagementSystem_APi.entities.enums.PaymentType;
 import com.reis.HotelManagementSystem_APi.entities.enums.ReservationStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
@@ -203,6 +212,118 @@ public class StayControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@DisplayName("Should return 201 Created and the location header")
+	void addIncidentalSuccessCase() throws Exception {
+		Long stayId = 1L;
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		
+		IncidentalResponseDTO outputDTO = new IncidentalResponseDTO(createStandardStay().getIncidentals().get(0));
+		
+		when(service.addIncidental(eq(stayId), any(IncidentalRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays/{id}/incidental", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").exists())
+				.andExpect(jsonPath("$.name").value(outputDTO.getName()))
+				.andExpect(jsonPath("$.quantity").value(outputDTO.getQuantity()))
+				.andExpect(jsonPath("$.price").value(5.00))
+				.andExpect(jsonPath("$.total").value(10.00))
+				.andExpect(jsonPath("$.moment").value("2026-01-22T20:00:00"))
+				.andExpect(header().exists("Location"));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Stay")
+	void addIncidentalResourceNotFoundCase() throws Exception {
+		Long stayId = 99L;
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		
+		when(service.addIncidental(eq(stayId), any(IncidentalRequestDTO.class))).thenThrow(new ResourceNotFoundException(stayId));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays/{id}/incidental", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request when trying add an incidental in a finished Stay")
+	void addIncidentalInvalidActionCase() throws Exception {
+		Long stayId = 99L;
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		
+		when(service.addIncidental(eq(stayId), any(IncidentalRequestDTO.class))).thenThrow(new InvalidActionException("Stay is already completed"));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays/{id}/incidental", stayId)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@DisplayName("Should return 201 Created and the location header")
+	void makePaymentSuccessCase() throws Exception {
+		Long id = 1L;
+		Payment p = new Payment(Instant.now(), PaymentStatus.APROVADO, PaymentType.CARTAO_DE_CREDITO, new BigDecimal("300.00"), createStandardStay().getReservation());
+		ReflectionTestUtils.setField(p, "id", id);
+		
+		PaymentRequestDTO inputDTO = new PaymentRequestDTO(PaymentType.CARTAO_DE_CREDITO, new BigDecimal("300.00"), id);
+		
+		PaymentResponseDTO outputDTO = new PaymentResponseDTO(p);
+		
+		when(service.makePayment(eq(id), any(PaymentRequestDTO.class))).thenReturn(outputDTO);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays/{id}/payment", id)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").exists())
+				.andExpect(jsonPath("$.moment").exists())
+				.andExpect(jsonPath("$.amount").value(300.00))
+				.andExpect(jsonPath("$.status").value(outputDTO.getStatus().name()))
+				.andExpect(jsonPath("$.type").value(outputDTO.getType().name()))
+				.andExpect(jsonPath("$.reservationId").exists())
+				.andExpect(header().exists("Location"));
+	}
+	
+	@Test
+	@DisplayName("Should return 404 Not Found when doesn't find Stay")
+	void makePaymentResourceNotFoundCase() throws Exception {
+		Long id = 99L;
+	
+		PaymentRequestDTO inputDTO = new PaymentRequestDTO(PaymentType.CARTAO_DE_CREDITO, new BigDecimal("300.00"), id);
+		
+		when(service.makePayment(eq(id), any(PaymentRequestDTO.class))).thenThrow(new ResourceNotFoundException(id));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/stays/{id}/payment", id)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isNotFound());
 	}
 	
 	private Stay createStandardStay() {
