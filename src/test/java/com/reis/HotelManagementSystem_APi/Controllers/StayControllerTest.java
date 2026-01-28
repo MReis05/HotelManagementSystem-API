@@ -76,7 +76,7 @@ public class StayControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].checkInDate").value("2026-01-22T14:00:00"))
+				.andExpect(jsonPath("$[0].checkInDate").value(dto.getCheckInDate().toString()))
 				.andExpect(jsonPath("$[0].totalValue").value(770.00))
 				.andExpect(jsonPath("$[0].guestSummaryDTO.name").value("John Green"));
 	}
@@ -97,10 +97,10 @@ public class StayControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1L))
 				.andExpect(jsonPath("$.reservationId").value(1L))
-				.andExpect(jsonPath("$.checkInDate").value("2026-01-22T14:00:00"))
+				.andExpect(jsonPath("$.checkInDate").value(dto.getCheckInDate().toString()))
 				.andExpect(jsonPath("$.totalValue").value(770.00))
 				.andExpect(jsonPath("$.guestSummaryDTO.name").value("John Green"))
-				.andExpect(jsonPath("$.incidentalsList[0].moment").value("2026-01-22T20:00:00"))
+				.andExpect(jsonPath("$.incidentalsList[0].moment").value(dto.getIncidentalsList().get(0).getMoment().toString()))
 				.andExpect(jsonPath("$.incidentalsList[0].total").value(10.00));
 	}
 	
@@ -123,7 +123,7 @@ public class StayControllerTest {
 	void checkInSuccessCase() throws Exception {
 		StayRequestDTO inputDTO = new StayRequestDTO();
 		inputDTO.setReservationId(1L);
-		inputDTO.setCheckInDate(LocalDateTime.of(2026, 01, 22, 14, 00));
+		inputDTO.setCheckInDate(LocalDateTime.now().withNano(0));
 		
 		StayResponseDTO outputDTO = new StayResponseDTO(createStandardStay());
 		outputDTO.getIncidentalsList().clear();
@@ -141,7 +141,7 @@ public class StayControllerTest {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").exists())
 				.andExpect(jsonPath("$.reservationId").value(1L))
-				.andExpect(jsonPath("$.checkInDate").value("2026-01-22T14:00:00"))
+				.andExpect(jsonPath("$.checkInDate").value(outputDTO.getCheckInDate().toString()))
 				.andExpect(jsonPath("$.totalValue").value(760.00))
 				.andExpect(jsonPath("$.guestSummaryDTO.name").value("John Green"))
 				.andExpect(header().exists("Location"));
@@ -151,7 +151,7 @@ public class StayControllerTest {
 	@DisplayName("Should return 400 Bad Request when Stay checkInDate is not equal with Reservation CheckInDate")
 	void checkInDateExceptionCase() throws Exception {
 		StayRequestDTO inputDTO = new StayRequestDTO();
-		inputDTO.setCheckInDate(LocalDateTime.of(2026, 01, 23, 14, 00));
+		inputDTO.setCheckInDate(LocalDateTime.now().withNano(0));
 		
 		StayResponseDTO outputDTO = new StayResponseDTO(createStandardStay());
 		
@@ -173,7 +173,7 @@ public class StayControllerTest {
 		Long stayId = 1L;
 		
 		StayResponseDTO dto = new StayResponseDTO(createStandardStay());
-		ReflectionTestUtils.setField(dto, "checkOutDate", LocalDateTime.of(2026, 01, 26, 12, 00));
+		ReflectionTestUtils.setField(dto, "checkOutDate", LocalDateTime.now().plusDays(4L).withNano(0));
 		
 		when(service.checkOut(stayId)).thenReturn(dto);
 		
@@ -182,7 +182,7 @@ public class StayControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				)
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.checkOutDate").value("2026-01-26T12:00:00"));
+				.andExpect(jsonPath("$.checkOutDate").value(dto.getCheckOutDate().toString()));
 	}
 	
 	@Test
@@ -218,7 +218,7 @@ public class StayControllerTest {
 	@DisplayName("Should return 201 Created and the location header")
 	void addIncidentalSuccessCase() throws Exception {
 		Long stayId = 1L;
-		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.now().plusHours(4L).withNano(0));
 		
 		IncidentalResponseDTO outputDTO = new IncidentalResponseDTO(createStandardStay().getIncidentals().get(0));
 		
@@ -237,7 +237,7 @@ public class StayControllerTest {
 				.andExpect(jsonPath("$.quantity").value(outputDTO.getQuantity()))
 				.andExpect(jsonPath("$.price").value(5.00))
 				.andExpect(jsonPath("$.total").value(10.00))
-				.andExpect(jsonPath("$.moment").value("2026-01-22T20:00:00"))
+				.andExpect(jsonPath("$.moment").value(outputDTO.getMoment().toString()))
 				.andExpect(header().exists("Location"));
 	}
 	
@@ -245,7 +245,7 @@ public class StayControllerTest {
 	@DisplayName("Should return 404 Not Found when doesn't find Stay")
 	void addIncidentalResourceNotFoundCase() throws Exception {
 		Long stayId = 99L;
-		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.now().plusHours(4L).withNano(0));
 		
 		when(service.addIncidental(eq(stayId), any(IncidentalRequestDTO.class))).thenThrow(new ResourceNotFoundException(stayId));
 		
@@ -263,7 +263,7 @@ public class StayControllerTest {
 	@DisplayName("Should return 400 Bad Request when trying add an incidental in a finished Stay")
 	void addIncidentalInvalidActionCase() throws Exception {
 		Long stayId = 99L;
-		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00));
+		IncidentalRequestDTO inputDTO = new IncidentalRequestDTO("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.now().plusHours(4L).withNano(0));
 		
 		when(service.addIncidental(eq(stayId), any(IncidentalRequestDTO.class))).thenThrow(new InvalidActionException("Stay is already completed"));
 		
@@ -331,16 +331,16 @@ public class StayControllerTest {
 		ReflectionTestUtils.setField(g1, "id", 1L);
 		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.OCUPADO, RoomType.SOLTEIRO);
 		ReflectionTestUtils.setField(r1, "id", 1L);
-		Reservation rv1 = new Reservation(LocalDate.of(2026, 01, 22), LocalDate.of(2026, 01, 26), ReservationStatus.EM_CURSO);
+		Reservation rv1 = new Reservation(LocalDate.now(), LocalDate.now().plusDays(4), ReservationStatus.EM_CURSO);
 		rv1.setId(1L);
 		rv1.setGuest(g1);
 		rv1.setRoom(r1);
 		rv1.setTotalValue(new BigDecimal("760.00"));
 		Stay s = new Stay();
 		ReflectionTestUtils.setField(s, "id", 1L);
-		s.setCheckInDate(LocalDateTime.of(2026, 01, 22, 14, 00));
+		s.setCheckInDate(LocalDateTime.now().withNano(0));
 		s.setReservation(rv1);
-		Incidental i = new Incidental("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.of(2026, 01, 22, 20, 00), s);
+		Incidental i = new Incidental("Coca-Cola", 2, new BigDecimal("5.00"), LocalDateTime.now().plusHours(4L).withNano(0), s);
 		ReflectionTestUtils.setField(i, "id", 1L);
 		s.getIncidentals().add(i);
 		return s;
