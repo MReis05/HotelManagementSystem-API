@@ -1,12 +1,32 @@
 services:
   app:
-    image: hotel-api
     build: .
+    image: hotel-api
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD} 
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/HMS_API?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+  mysqldb:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: HMS_API
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql	  
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10		  			
+volumes:
+    mysql-data:	  

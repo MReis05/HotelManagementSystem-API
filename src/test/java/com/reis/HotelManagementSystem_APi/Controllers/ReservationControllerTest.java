@@ -72,8 +72,8 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].checkInDate").value("2026-02-01"))
-				.andExpect(jsonPath("$[0].checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$[0].checkInDate").value(LocalDate.now().toString()))
+				.andExpect(jsonPath("$[0].checkOutDate").value(LocalDate.now().plusDays(4L).toString()))
 				.andExpect(jsonPath("$[0].status").value(dto.getStatus().name()))
 				.andExpect(jsonPath("$[0].totalValue").value(570.00));
 	}
@@ -91,8 +91,8 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].checkInDate").value("2026-02-01"))
-				.andExpect(jsonPath("$[0].checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$[0].checkInDate").value(LocalDate.now().toString()))
+				.andExpect(jsonPath("$[0].checkOutDate").value(LocalDate.now().plusDays(4L).toString()))
 				.andExpect(jsonPath("$[0].status").value(dto.getStatus().name()))
 				.andExpect(jsonPath("$[0].totalValue").value(570.00))
 				.andExpect(jsonPath("$[0].roomSummaryDTO.status").value(dto.getRoomSummaryDTO().getStatus().name()))
@@ -113,8 +113,8 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(reservationId))
-				.andExpect(jsonPath("$.checkInDate").value("2026-02-01"))
-				.andExpect(jsonPath("$.checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$.checkInDate").value(LocalDate.now().toString()))
+				.andExpect(jsonPath("$.checkOutDate").value(LocalDate.now().plusDays(4L).toString()))
 				.andExpect(jsonPath("$.status").value(dto.getStatus().name()))
 				.andExpect(jsonPath("$.totalValue").value(570.00))
 				.andExpect(jsonPath("$.roomSummaryDTO.status").value(dto.getRoomSummaryDTO().getStatus().name()))
@@ -138,7 +138,7 @@ public class ReservationControllerTest {
 	@Test
 	@DisplayName("Should return 201 Created and the location header")
 	void insertSuccessCase() throws Exception {
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04));
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now(), LocalDate.now().plusDays(4L));
 		
 		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
 		
@@ -153,8 +153,8 @@ public class ReservationControllerTest {
 				)
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").exists())
-				.andExpect(jsonPath("$.checkInDate").value("2026-02-01"))
-				.andExpect(jsonPath("$.checkOutDate").value("2026-02-04"))
+				.andExpect(jsonPath("$.checkInDate").value(LocalDate.now().toString()))
+				.andExpect(jsonPath("$.checkOutDate").value(LocalDate.now().plusDays(4L).toString()))
 				.andExpect(jsonPath("$.status").value(outputDTO.getStatus().name()))
 				.andExpect(jsonPath("$.totalValue").value(570.00))
 				.andExpect(jsonPath("$.roomSummaryDTO.status").value(outputDTO.getRoomSummaryDTO().getStatus().name()))
@@ -165,7 +165,7 @@ public class ReservationControllerTest {
 	@Test
 	@DisplayName("Should return 404 Not Found when doesn't find Guest or Room")
 	void insertResourceNotFoundCase() throws Exception {
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04));
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now(), LocalDate.now().plusDays(4L));
 		
 		when(service.insert(any(ReservationRequestDTO.class))).thenThrow(new ResourceNotFoundException(1L));
 		
@@ -182,7 +182,7 @@ public class ReservationControllerTest {
 	@Test
 	@DisplayName("Should return 400 Bad Request when room is unavailable")
 	void insertRoomUnavailableCase() throws Exception {
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04));
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now(), LocalDate.now().plusDays(4L));
 		
 		when(service.insert(any(ReservationRequestDTO.class))).thenThrow(new RoomUnavailableException(1));
 		
@@ -200,11 +200,11 @@ public class ReservationControllerTest {
 	@DisplayName("Should return 200 OK when updating Reservation")
 	void updateReservationSuccessCase() throws Exception {
 		Long reservationId = 1L;
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now().plusDays(4L), LocalDate.now().plusDays(8L));
 		
 		ReservationResponseDTO outputDTO = new ReservationResponseDTO(createStandardReservation());
-		ReflectionTestUtils.setField(outputDTO, "checkInDate", LocalDate.of(2026, 02, 06));
-		ReflectionTestUtils.setField(outputDTO, "checkOutDate", LocalDate.of(2026, 02, 10));
+		ReflectionTestUtils.setField(outputDTO, "checkInDate", LocalDate.now().plusDays(4L));
+		ReflectionTestUtils.setField(outputDTO, "checkOutDate", LocalDate.now().plusDays(8L));
 		
 		when(service.updateReservation(eq(reservationId), any(ReservationRequestDTO.class))).thenReturn(outputDTO);
 		
@@ -224,7 +224,7 @@ public class ReservationControllerTest {
 	@DisplayName("Should return 404 Not Found when doesn't find Reservation")
 	void updateReservationResourceNotFoundCase() throws Exception {
 		Long reservationId = 1L;
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));;
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now().plusDays(4L), LocalDate.now().plusDays(8L));;
 		
 		when(service.updateReservation(eq(reservationId), any(ReservationRequestDTO.class))).thenThrow(new ResourceNotFoundException(reservationId));
 		
@@ -242,7 +242,7 @@ public class ReservationControllerTest {
 	@DisplayName("Should return 400 Bad Request when reservation is already completed or canceled")
 	void updateReservationInvalidActionCase() throws Exception {
 		Long reservationId = 1L;
-		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.of(2026, 02, 06), LocalDate.of(2026, 02, 10));;
+		ReservationRequestDTO inputDTO = new ReservationRequestDTO(1L, 1L, LocalDate.now().plusDays(4L), LocalDate.now().plusDays(8L));;
 		
 		when(service.updateReservation(eq(reservationId), any(ReservationRequestDTO.class))).thenThrow(new InvalidActionException("It is not possible to update a completed or canceled reservation"));
 		
@@ -338,7 +338,7 @@ public class ReservationControllerTest {
 	}
 	
 	private Reservation createStandardReservation() {
-		Reservation rv = new Reservation(LocalDate.of(2026, 02, 01), LocalDate.of(2026, 02, 04), ReservationStatus.PENDENTE);
+		Reservation rv = new Reservation(LocalDate.now(), LocalDate.now().plusDays(4L), ReservationStatus.PENDENTE);
 		Room r1 = new Room(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
 		ReflectionTestUtils.setField(r1, "id", 1L);
 		Guest g1 = new Guest("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), new Address("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65));
