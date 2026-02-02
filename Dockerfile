@@ -14,12 +14,4 @@ COPY --from=build /app/target/*.jar /app/app.jar
 
 EXPOSE 8080
 
-ENV DB_URL=jdbc:mysql://host.docker.internal:3306/HMS_API?serverTimezone=UTC
-ENV DB_USERNAME=root
-ENV DB_PASSWORD=root
-
-ENTRYPOINT ["java", \
-            "-Dspring.datasource.url=${DB_URL}", \
-            "-Dspring.datasource.username=${DB_USERNAME}", \
-            "-Dspring.datasource.password=${DB_PASSWORD}", \
-            "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
