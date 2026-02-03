@@ -152,6 +152,7 @@ public class StayControllerTest {
 	void checkInDateExceptionCase() throws Exception {
 		StayRequestDTO inputDTO = new StayRequestDTO();
 		inputDTO.setCheckInDate(LocalDateTime.now().withNano(0));
+		inputDTO.setReservationId(1L);
 		
 		StayResponseDTO outputDTO = new StayResponseDTO(createStandardStay());
 		
