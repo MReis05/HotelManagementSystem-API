@@ -1,6 +1,8 @@
 package com.reis.HotelManagementSystem_APi.IntegrationTests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reis.HotelManagementSystem_APi.dto.AddressDTO;
+import com.reis.HotelManagementSystem_APi.dto.GuestRequestDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
@@ -88,5 +92,64 @@ public class GuestIntegrationTest {
 				.andExpect(jsonPath("$.status").value(404))
 				.andExpect(jsonPath("$.error").value("Resource not found"))
 				.andExpect(jsonPath("$.message").value("Id não encontrado. Id:" + (guestId + 98)));
+	}
+	
+	@Test
+	@DisplayName("Should create and save Guest in Database and return 201 Created status (End-to-End")
+	void insertSuccessCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "Av.Morumbi", 102);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("Paul Black", "011.180.880-42","paul@gmail.com", "21989091214", LocalDate.of(2000, 1, 11), address);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/guests")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.name").value("Paul Black"))
+				.andExpect(jsonPath("$.cpf").value("011.180.880-42"))
+				.andExpect(jsonPath("$.birthDate").value("2000-01-11"))
+				.andExpect(jsonPath("$.address.cep").value("05606-100"));
+		
+		Guest savedGuest = repository.findAll().stream().filter(g -> g.getCpf().equals("011.180.880-42"))
+				.findFirst().orElseThrow(() -> new AssertionError("Guest não encontrado"));
+		
+		assertEquals(2, repository.count());
+		assertEquals("Paul Black", savedGuest.getName());
+		assertEquals("011.180.880-42", savedGuest.getCpf());
+		assertEquals("paul@gmail.com", savedGuest.getEmail());
+		assertEquals("21989091214", savedGuest.getPhone());
+		assertEquals(LocalDate.of(2000, 1, 11), savedGuest.getBirthDate());
+		assertEquals("05606-100", savedGuest.getAddress().getCep());
+		assertEquals("São Paulo", savedGuest.getAddress().getUf());
+		assertEquals("São Paulo", savedGuest.getAddress().getCity());
+		assertEquals("Morumbi", savedGuest.getAddress().getNeighborhood());
+		assertEquals("Av.Morumbi", savedGuest.getAddress().getStreet());
+		assertEquals(102, savedGuest.getAddress().getHouseNumber());
+	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request hen a field does not comply with validations")
+	void insertNotSuccesfullCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606", "São Paulo", "São Paulo", "Morumbi", "Av.Morumbi", 102);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("Paul Black", "011.180.88","paul@gmail.com", "21989091214", LocalDate.of(2000, 1, 11), address);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/guests")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.status").value(422))
+				.andExpect(jsonPath("$.error").value("Validation Error"))
+				.andExpect(jsonPath("$.errors").isArray())
+	            .andExpect(jsonPath("$.errors[?(@.fieldName == 'cpf')]").exists())
+	            .andExpect(jsonPath("$.errors[?(@.fieldName == 'address.cep')]").exists());
+		
+		assertEquals(1, repository.count());
 	}
 }
