@@ -199,7 +199,13 @@ public class ReservationService {
 			obj.setGuest(guestRepository.findById(dto.getGuestId()).orElseThrow(()-> new ResourceNotFoundException(dto.getGuestId())));
 		}
 		if(dto.getRoomId() != null) {
-			obj.setRoom(roomRepository.findById(dto.getRoomId()).orElseThrow(()-> new ResourceNotFoundException(dto.getRoomId())));
+			Room room = roomRepository.findById(dto.getRoomId()).orElseThrow(()-> new ResourceNotFoundException(dto.getRoomId()));
+			
+			if (room.getStatus() == RoomStatus.MANUTENCAO) {
+				throw new RoomUnavailableException(room.getNumber());
+			}
+			
+			obj.setRoom(room);
 			obj.setStatus(ReservationStatus.PENDENTE);
 		}
 	}
