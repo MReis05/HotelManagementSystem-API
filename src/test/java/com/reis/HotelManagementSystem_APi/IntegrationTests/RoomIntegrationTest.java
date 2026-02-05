@@ -249,8 +249,7 @@ public class RoomIntegrationTest {
 				.andExpect(jsonPath("$.status").value(RoomStatus.DISPONIVEL.name()))
 				.andExpect(jsonPath("$.type").value(RoomType.SOLTEIRO.name()));
 		
-		Room savedRoom = repository.findAll().stream().filter(g -> g.getNumber().equals(1))
-		         .findFirst().orElseThrow(() -> new AssertionError("Room não encontrado"));
+		Room savedRoom = repository.findById(roomId).orElseThrow();
 
 		assertEquals(1, repository.count());
 		assertEquals(1, savedRoom.getNumber());

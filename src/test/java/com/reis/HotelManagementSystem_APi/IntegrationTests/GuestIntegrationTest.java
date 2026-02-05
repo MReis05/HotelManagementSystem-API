@@ -178,8 +178,7 @@ public class GuestIntegrationTest {
 				.andExpect(jsonPath("$.email").value("johnBlack@gmail.com"))
 				.andExpect(jsonPath("$.address.street").value("Av.Morumbi"));
 		
-		Guest savedGuest = repository.findAll().stream().filter(g -> g.getCpf().equals("14462660013"))
-				.findFirst().orElseThrow(() -> new AssertionError("Guest não encontrado"));
+		Guest savedGuest = repository.findById(guestId).orElseThrow();
 		
 		assertEquals(1, repository.count());
 		assertEquals(guestId, savedGuest.getId());
