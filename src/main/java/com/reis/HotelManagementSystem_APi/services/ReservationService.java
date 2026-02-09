@@ -129,7 +129,7 @@ public class ReservationService {
 	@Transactional
 	public ReservationResponseDTO confirmReservation(Long id, PaymentRequestDTO dto) {
 		Reservation obj = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException(id));
-		obj.getPayments().add(processPayment(dto, obj));
+		processPayment(dto, obj);
 		BigDecimal totalPaid = obj.getPayments().stream().filter(p -> p.getStatus() == PaymentStatus.APROVADO)
 				.map(Payment::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		
@@ -180,7 +180,8 @@ public class ReservationService {
 			}
 		}
 		else {
-			throw new CheckOutException("Não é possível realizar o Check-Out com valores ainda pendentes");
+			throw new CheckOutException("Não é possível realizar o Check-Out com valores ainda pendentes. Valor da reserva: " + obj.getTotalValue()
+										+ " Total pago: " + totalPaid);
 		}
 	}
 	
@@ -249,6 +250,7 @@ public class ReservationService {
 		payment.setStatus(PaymentStatus.APROVADO);
 		payment.setType(dto.getType());
 		payment.setReservation(reservation);
+		reservation.getPayments().add(payment);
 		payment = paymentRepository.save(payment);
 		return payment;
 	}

@@ -173,7 +173,7 @@ public class ReservationIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Should throw a ResourceNotFoundException and 404 Not Found status when doesn't find Room")
+	@DisplayName("Should throw a ResourceNotFoundException and 404 Not Found status when doesn't find reservation")
 	void findByIdResourceNotFoundCase() throws Exception {
 		mockMvc.perform(
 				get("/reservations/{id}", (reservationId + 98))
