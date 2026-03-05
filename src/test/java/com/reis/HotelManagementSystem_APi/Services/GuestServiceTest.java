@@ -30,6 +30,7 @@ import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
 import com.reis.HotelManagementSystem_APi.services.GuestService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -112,6 +113,24 @@ public class GuestServiceTest {
 		assertEquals("John Green", guestReceived.getName());
 		
 		verify(repository).save(any(Guest.class));
+	}
+	
+	@Test
+	@DisplayName("Should throw ColumnConstraintException when CPF already exists")
+	void insertCpfAlreadyExistsCase() {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
+		GuestRequestDTO dto = new GuestRequestDTO("John Green", "99999999901","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), address);
+		
+		when(repository.existsByCpf("99999999901")).thenReturn(true);
+		
+		ColumnConstraintException exception = assertThrows(ColumnConstraintException.class, () -> {
+	        service.insert(dto);
+	    });
+	    
+	    assertNotNull(exception);
+	    assertEquals("CPF já em uso", exception.getMessage());
+	    
+	    verify(repository, never()).save(any(Guest.class));
 	}
 	
 	@Test

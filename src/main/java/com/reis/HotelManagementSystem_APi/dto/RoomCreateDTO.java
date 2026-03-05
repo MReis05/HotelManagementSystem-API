@@ -13,7 +13,7 @@ public class RoomCreateDTO {
 
 	@NotNull
 	@Positive
-	private Integer number;
+	private Integer roomNumber;
 	@NotNull
 	@Positive
 	private BigDecimal pricePerNight;
@@ -27,21 +27,21 @@ public class RoomCreateDTO {
 	public RoomCreateDTO() {
 	}
 
-	public RoomCreateDTO(Integer number, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
+	public RoomCreateDTO(Integer roomNumber, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
 		super();
-		this.number = number;
+		this.roomNumber = roomNumber;
 		this.pricePerNight = pricePerNight;
 		this.description = description;
 		this.status = status;
 		this.type = type;
 	}
 
-	public Integer getNumber() {
-		return number;
+	public Integer getRoomNumber() {
+		return roomNumber;
 	}
 
-	public void setNumber(Integer number) {
-		this.number = number;
+	public void setRoomNumber(Integer roomNumber) {
+		this.roomNumber = roomNumber;
 	}
 
 	public BigDecimal getPricePerNight() {

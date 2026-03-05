@@ -33,6 +33,7 @@ import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.services.RoomService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -174,6 +175,26 @@ public class RoomControllerTest {
 				.andExpect(jsonPath("$.status").value(inputDTO.getStatus().name()))
 				.andExpect(jsonPath("$.type").value(inputDTO.getType().name()))
 				.andExpect(header().exists("Location"));
+	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request when Room Number already exists")
+	void insertRoomNumberExistsCase() throws Exception {
+		RoomCreateDTO inputDTO = new RoomCreateDTO(1, new BigDecimal("190.00"), "Quarto com Ventilador", RoomStatus.DISPONIVEL, RoomType.SOLTEIRO);
+		
+		when(service.insert(any(RoomCreateDTO.class))).thenThrow(new ColumnConstraintException("Número do quarto já em uso"));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/rooms")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Existed field in Database"))
+				.andExpect(jsonPath("$.message").value("Número do quarto já em uso"));
 	}
 	
 	@Test

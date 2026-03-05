@@ -156,6 +156,25 @@ public class GuestIntegrationTest {
 	}
 	
 	@Test
+	@DisplayName("Should return 400 Bad Request when a CPF already exists")
+	void insertCpfAlreadyExistsCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "Av.Morumbi", 102);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("Paul Black", "14462660013","paul@gmail.com", "21989091214", LocalDate.of(2000, 1, 11), address);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/guests")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Existed field in Database"))
+				.andExpect(jsonPath("$.message").value("CPF já em uso"));
+	}
+	
+	@Test
 	@DisplayName("Should update a Guest and return 200 OK status (End-to-End)")
 	void updateSuccessCase() throws Exception {
 		AddressDTO address = new AddressDTO();

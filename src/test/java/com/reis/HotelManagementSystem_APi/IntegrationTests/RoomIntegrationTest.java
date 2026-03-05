@@ -64,7 +64,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(roomId))
-				.andExpect(jsonPath("$[0].number").value(1))
+				.andExpect(jsonPath("$[0].roomNumber").value(1))
 				.andExpect(jsonPath("$[0].pricePerNight").value(190.00))
 				.andExpect(jsonPath("$[0].description").value("Quarto com Ventilador"))
 				.andExpect(jsonPath("$[0].status").value(RoomStatus.DISPONIVEL.name()))
@@ -80,7 +80,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(roomId))
-				.andExpect(jsonPath("$[0].number").value(1))
+				.andExpect(jsonPath("$[0].roomNumber").value(1))
 				.andExpect(jsonPath("$[0].pricePerNight").value(190.00))
 				.andExpect(jsonPath("$[0].description").value("Quarto com Ventilador"))
 				.andExpect(jsonPath("$[0].status").value(RoomStatus.DISPONIVEL.name()))
@@ -96,7 +96,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(roomId))
-				.andExpect(jsonPath("$[0].number").value(1))
+				.andExpect(jsonPath("$[0].roomNumber").value(1))
 				.andExpect(jsonPath("$[0].pricePerNight").value(190.00))
 				.andExpect(jsonPath("$[0].description").value("Quarto com Ventilador"))
 				.andExpect(jsonPath("$[0].status").value(RoomStatus.DISPONIVEL.name()))
@@ -124,7 +124,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(roomId))
-				.andExpect(jsonPath("$[0].number").value(1))
+				.andExpect(jsonPath("$[0].roomNumber").value(1))
 				.andExpect(jsonPath("$[0].pricePerNight").value(190.00))
 				.andExpect(jsonPath("$[0].description").value("Quarto com Ventilador"))
 				.andExpect(jsonPath("$[0].status").value(RoomStatus.DISPONIVEL.name()))
@@ -152,7 +152,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(roomId))
-				.andExpect(jsonPath("$.number").value(1))
+				.andExpect(jsonPath("$.roomNumber").value(1))
 				.andExpect(jsonPath("$.pricePerNight").value(190.00))
 				.andExpect(jsonPath("$.description").value("Quarto com Ventilador"))
 				.andExpect(jsonPath("$.status").value(RoomStatus.DISPONIVEL.name()))
@@ -185,17 +185,17 @@ public class RoomIntegrationTest {
 				.content(jsonBody)
 				)
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.number").value(45))
+				.andExpect(jsonPath("$.roomNumber").value(45))
 				.andExpect(jsonPath("$.pricePerNight").value(250.00))
 				.andExpect(jsonPath("$.description").value("Quarto com Ar-Condicionado"))
 				.andExpect(jsonPath("$.status").value(RoomStatus.DISPONIVEL.name()))
 				.andExpect(jsonPath("$.type").value(RoomType.CASAL.name()));
 		
-		Room savedRoom = repository.findAll().stream().filter(g -> g.getNumber().equals(45))
+		Room savedRoom = repository.findAll().stream().filter(g -> g.getRoomNumber().equals(45))
 				         .findFirst().orElseThrow(() -> new AssertionError("Room não encontrado"));
 		
 		assertEquals(2, repository.count());
-		assertEquals(45, savedRoom.getNumber());
+		assertEquals(45, savedRoom.getRoomNumber());
 		assertEquals(new BigDecimal("250.00"), savedRoom.getPricePerNight());
 		assertEquals("Quarto com Ar-Condicionado", savedRoom.getDescription());
 		assertEquals(RoomStatus.DISPONIVEL, savedRoom.getStatus());
@@ -206,7 +206,7 @@ public class RoomIntegrationTest {
 	@DisplayName("Should return 422 Unprocessable Entity with Validation Errors")
 	void insertWithInvalidFieldsCase() throws Exception {
 		RoomCreateDTO inputDTO = new RoomCreateDTO();
-		inputDTO.setNumber(45);
+		inputDTO.setRoomNumber(45);
 		inputDTO.setStatus(RoomStatus.DISPONIVEL);
 		inputDTO.setType(RoomType.CASAL);
 		
@@ -228,6 +228,27 @@ public class RoomIntegrationTest {
 	}
 	
 	@Test
+	@DisplayName("Should return 400 Bad Request when Room roomNumber already exists")
+	void insertRoomroomNumberExistsCase() throws Exception {
+		RoomCreateDTO inputDTO = new RoomCreateDTO(1, new BigDecimal("250.00"), "Quarto com Ar-Condicionado", RoomStatus.DISPONIVEL, RoomType.CASAL);
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+
+		mockMvc.perform(
+				post("/rooms")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Existed field in Database"))
+				.andExpect(jsonPath("$.message").value("Número do quarto já em uso"));
+		
+		assertEquals(1, repository.count());
+	}
+	
+	@Test
 	@DisplayName("Should update Room and return 200 OK status (End-to-End)")
 	void updateSuccessCase() throws Exception {
 		RoomUpdateDTO inputDTO = new RoomUpdateDTO();
@@ -243,7 +264,7 @@ public class RoomIntegrationTest {
 				)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(roomId))
-				.andExpect(jsonPath("$.number").value(1))
+				.andExpect(jsonPath("$.roomNumber").value(1))
 				.andExpect(jsonPath("$.pricePerNight").value(230.00))
 				.andExpect(jsonPath("$.description").value("Quarto com Ar-Condicionado"))
 				.andExpect(jsonPath("$.status").value(RoomStatus.DISPONIVEL.name()))
@@ -252,7 +273,7 @@ public class RoomIntegrationTest {
 		Room savedRoom = repository.findById(roomId).orElseThrow();
 
 		assertEquals(1, repository.count());
-		assertEquals(1, savedRoom.getNumber());
+		assertEquals(1, savedRoom.getRoomNumber());
 		assertEquals(new BigDecimal("230.00"), savedRoom.getPricePerNight());
 		assertEquals("Quarto com Ar-Condicionado", savedRoom.getDescription());
 		assertEquals(RoomStatus.DISPONIVEL, savedRoom.getStatus());
@@ -278,7 +299,7 @@ public class RoomIntegrationTest {
 				.andExpect(jsonPath("$.error").value("Resource not found"))
 				.andExpect(jsonPath("$.message").value("Id não encontrado. Id:" + (roomId + 98)));
 		
-		Room savedRoom = repository.findAll().stream().filter(g -> g.getNumber().equals(1))
+		Room savedRoom = repository.findAll().stream().filter(g -> g.getRoomNumber().equals(1))
 		         .findFirst().orElseThrow(() -> new AssertionError("Room não encontrado"));
 
 		assertEquals(1, repository.count());

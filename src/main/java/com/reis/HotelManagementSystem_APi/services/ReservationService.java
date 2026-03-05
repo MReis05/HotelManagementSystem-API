@@ -84,7 +84,7 @@ public class ReservationService {
 		Room room = roomRepository.findById(dto.getRoomId()).orElseThrow(()-> new ResourceNotFoundException(dto.getRoomId()));
 		
 		if (room.getStatus() == RoomStatus.MANUTENCAO) {
-			throw new RoomUnavailableException(room.getNumber());
+			throw new RoomUnavailableException(room.getRoomNumber());
 		}
 		BigDecimal totalValue = calculateTotalStayCost(dto, room.getPricePerNight());
 		
@@ -203,7 +203,7 @@ public class ReservationService {
 			Room room = roomRepository.findById(dto.getRoomId()).orElseThrow(()-> new ResourceNotFoundException(dto.getRoomId()));
 			
 			if (room.getStatus() == RoomStatus.MANUTENCAO) {
-				throw new RoomUnavailableException(room.getNumber());
+				throw new RoomUnavailableException(room.getRoomNumber());
 			}
 			
 			obj.setRoom(room);
@@ -224,7 +224,7 @@ public class ReservationService {
 					            (newCheckOut.isAfter(reservation.getCheckInDate()));
 			
 			if(overlaps) {
-				throw new RoomUnavailableException(room.getNumber());
+				throw new RoomUnavailableException(room.getRoomNumber());
 			}
 		}
 	}

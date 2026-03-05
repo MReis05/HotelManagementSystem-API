@@ -32,6 +32,7 @@ import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
 import com.reis.HotelManagementSystem_APi.services.RoomService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -182,7 +183,7 @@ public class RoomServiceTest {
 	void insertSuccessCase() {
 		RoomCreateDTO dto = new RoomCreateDTO();
 		dto.setDescription("Quarto com Ventilador");
-		dto.setNumber(1);
+		dto.setRoomNumber(1);
 		dto.setPricePerNight(new BigDecimal("190.00"));
 		dto.setStatus(RoomStatus.DISPONIVEL);
 		dto.setType(RoomType.SOLTEIRO);
@@ -200,6 +201,28 @@ public class RoomServiceTest {
 		assertEquals(new BigDecimal("190.00"), roomReceived.getPricePerNight());
 		
 		verify(repository).save(any(Room.class));
+	}
+	
+	@Test
+	@DisplayName("Should throw a ColumnConstraintException when Room Number already exists")
+	void insertRoomNumberExistsCase() {
+		RoomCreateDTO dto = new RoomCreateDTO();
+		dto.setDescription("Quarto com Ventilador");
+		dto.setRoomNumber(1);
+		dto.setPricePerNight(new BigDecimal("190.00"));
+		dto.setStatus(RoomStatus.DISPONIVEL);
+		dto.setType(RoomType.SOLTEIRO);
+		
+		when(repository.existsByRoomNumber(1)).thenReturn(true);
+		
+		ColumnConstraintException exception = assertThrows(ColumnConstraintException.class, () -> {
+	        service.insert(dto);
+	    });
+	    
+	    assertNotNull(exception);
+	    assertEquals("Número do quarto já em uso", exception.getMessage());
+	    
+	    verify(repository, never()).save(any(Room.class));
 	}
 	
 	@Test
