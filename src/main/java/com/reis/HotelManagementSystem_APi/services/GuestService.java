@@ -13,6 +13,7 @@ import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.repositories.GuestRepository;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -38,6 +39,9 @@ public class GuestService {
 
 	@Transactional
 	public GuestResponseDTO insert(GuestRequestDTO dto) {
+		if (repository.existsByCpf(dto.getCpf())) {
+			throw new ColumnConstraintException("CPF já em uso");
+		}
 		Address address = new Address(dto.getAddress().getCep(), dto.getAddress().getUf(), dto.getAddress().getCity(),
 				dto.getAddress().getNeighborhood(), dto.getAddress().getStreet(), dto.getAddress().getHouseNumber());
 		Guest obj = new Guest(dto.getName(), dto.getCpf(), dto.getEmail(), dto.getPhone(), dto.getBirthDate(), address);

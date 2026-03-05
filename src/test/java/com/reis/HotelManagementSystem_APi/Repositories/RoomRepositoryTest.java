@@ -1,6 +1,7 @@
 package com.reis.HotelManagementSystem_APi.Repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,9 +35,9 @@ public class RoomRepositoryTest {
 	void findByStatusSuccessCase() {
 		Room room = createStandardRoom();
 		
-		Room persitedRoom = entityManager.persistAndFlush(room);
+		Room persistedRoom = entityManager.persistAndFlush(room);
 		
-		List<Room> listReceived = repository.findByStatus(persitedRoom.getStatus());
+		List<Room> listReceived = repository.findByStatus(persistedRoom.getStatus());
 		
 		assertNotNull(listReceived);
 		assertEquals(1, listReceived.size());
@@ -57,9 +58,9 @@ public class RoomRepositoryTest {
 	void findByTypeSuccessCase() {
 		Room room = createStandardRoom();
 		
-		Room persitedRoom = entityManager.persistAndFlush(room);
+		Room persistedRoom = entityManager.persistAndFlush(room);
 		
-		List<Room> listReceived = repository.findByType(persitedRoom.getType());
+		List<Room> listReceived = repository.findByType(persistedRoom.getType());
 		
 		assertNotNull(listReceived);
 		assertEquals(RoomType.SOLTEIRO, listReceived.get(0).getType());
@@ -79,9 +80,9 @@ public class RoomRepositoryTest {
 	void findByTypeAndStatusSuccessCase() {
 		Room room = createStandardRoom();
 		
-		Room persitedRoom = entityManager.persistAndFlush(room);
+		Room persistedRoom = entityManager.persistAndFlush(room);
 		
-		List<Room> listReceived = repository.findByTypeAndStatus(persitedRoom.getType(), persitedRoom.getStatus());
+		List<Room> listReceived = repository.findByTypeAndStatus(persistedRoom.getType(), persistedRoom.getStatus());
 		
 		assertNotNull(listReceived);
 		assertEquals(RoomType.SOLTEIRO, listReceived.get(0).getType());
@@ -95,6 +96,26 @@ public class RoomRepositoryTest {
 		
 		assertNotNull(listReceived);
 		assertTrue(listReceived.isEmpty());
+	}
+	
+	@Test
+	@DisplayName("Should return true if find a Room by receiving room number")
+	void existsByRoomNumberTrueCase() {
+		Room room = createStandardRoom();
+		
+		Room persistedRoom = entityManager.persistAndFlush(room);
+		
+		boolean existedRoom = repository.existsByRoomNumber(persistedRoom.getRoomNumber());
+		
+		assertTrue(existedRoom);
+	}
+	
+	@Test
+	@DisplayName("Should return false if doesn't find a Room by receiving room number")
+	void existsByRoomNumberFalseCase() {
+		boolean existedRoom = repository.existsByRoomNumber(2);
+		
+		assertFalse(existedRoom);
 	}
 	
 	private Room createStandardRoom() {

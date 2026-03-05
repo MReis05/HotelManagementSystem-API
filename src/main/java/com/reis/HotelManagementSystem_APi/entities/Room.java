@@ -28,7 +28,8 @@ public class Room implements Serializable{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private Integer number;
+	@Column(unique = true)
+	private Integer roomNumber;
 	@Column(precision = 10, scale = 2)
 	private BigDecimal pricePerNight;
 	private String description;
@@ -44,9 +45,9 @@ public class Room implements Serializable{
 	public Room() {
 	}
 	
-	public Room(Integer number, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
+	public Room(Integer roomNumber, BigDecimal pricePerNight, String description, RoomStatus status, RoomType type) {
 		super();
-		this.number = number;
+		this.roomNumber = roomNumber;
 		this.pricePerNight = pricePerNight;
 		this.description = description;
 		this.status = status;
@@ -57,12 +58,12 @@ public class Room implements Serializable{
 		return id;
 	}
 
-	public Integer getNumber() {
-		return number;
+	public Integer getRoomNumber() {
+		return roomNumber;
 	}
 
-	public void setNumber(Integer number) {
-		this.number = number;
+	public void setRoomNumber(Integer roomNumber) {
+		this.roomNumber = roomNumber;
 	}
 
 	public BigDecimal getPricePerNight() {

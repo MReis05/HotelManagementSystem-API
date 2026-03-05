@@ -32,6 +32,7 @@ import com.reis.HotelManagementSystem_APi.dto.GuestResponseDTO;
 import com.reis.HotelManagementSystem_APi.entities.Address;
 import com.reis.HotelManagementSystem_APi.entities.Guest;
 import com.reis.HotelManagementSystem_APi.services.GuestService;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -120,6 +121,27 @@ public class GuestControllerTest {
 				.andExpect(jsonPath("$.name").value("John Green"))
 				.andExpect(header().exists("Location"));
 	}
+	
+	@Test
+	@DisplayName("Should return 400 Bad Request when CPF already exists")
+	void insertCpfAlreadyExistsCase() throws Exception {
+		AddressDTO address = new AddressDTO("05606-100", "São Paulo", "São Paulo", "Morumbi", "blala", 65);
+		GuestRequestDTO inputDTO = new GuestRequestDTO("John Green", "14462660013","john@gmail.com", "779118298282", LocalDate.of(2003, 1, 05), address);
+		
+		when(service.insert(any(GuestRequestDTO.class))).thenThrow(new ColumnConstraintException("CPF já em uso"));
+		
+		String jsonBody = mapper.writeValueAsString(inputDTO);
+		
+		mockMvc.perform(
+				post("/guests")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonBody)
+				)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.error").value("Existed field in Database"))
+				.andExpect(jsonPath("$.message").value("CPF já em uso"));
+	}	
 	
 	@Test
 	@DisplayName("Should return 200 OK when updating guest")

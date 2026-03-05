@@ -6,4 +6,5 @@ import com.reis.HotelManagementSystem_APi.entities.Guest;
 
 public interface GuestRepository extends JpaRepository<Guest, Long> {
 
+	boolean existsByCpf(String cpf);
 }

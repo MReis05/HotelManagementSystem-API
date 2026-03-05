@@ -6,7 +6,7 @@ import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 public class RoomSummaryDTO {
 
 	private Long id;
-	private Integer number;
+	private Integer roomNumber;
 	private RoomStatus status;
 	
 	public RoomSummaryDTO() {
@@ -14,7 +14,7 @@ public class RoomSummaryDTO {
 	
 	public RoomSummaryDTO(Room obj) {
 		this.id = obj.getId();
-		this.number = obj.getNumber();
+		this.roomNumber = obj.getRoomNumber();
 		this.status = obj.getStatus();
 	}
 
@@ -26,12 +26,12 @@ public class RoomSummaryDTO {
 		this.id = id;
 	}
 
-	public Integer getNumber() {
-		return number;
+	public Integer getRoomNumber() {
+		return roomNumber;
 	}
 
-	public void setNumber(Integer number) {
-		this.number = number;
+	public void setRoomNumber(Integer roomNumber) {
+		this.roomNumber = roomNumber;
 	}
 
 	public RoomStatus getStatus() {

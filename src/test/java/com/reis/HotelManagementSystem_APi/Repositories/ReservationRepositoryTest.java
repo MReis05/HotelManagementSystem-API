@@ -42,9 +42,9 @@ public class ReservationRepositoryTest {
 		entityManager.persistAndFlush(reservation.getGuest());
 		entityManager.persistAndFlush(reservation.getRoom());
 		
-		Reservation persitedReservation = entityManager.persistAndFlush(reservation);
+		Reservation persistedReservation = entityManager.persistAndFlush(reservation);
 		
-		List<Reservation> listReceived = repository.findByStatus(persitedReservation.getStatus());
+		List<Reservation> listReceived = repository.findByStatus(persistedReservation.getStatus());
 		
 		assertNotNull(listReceived);
 		assertEquals(ReservationStatus.PENDENTE, listReceived.get(0).getStatus());

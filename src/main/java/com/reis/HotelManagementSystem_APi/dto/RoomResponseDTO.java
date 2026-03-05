@@ -9,7 +9,7 @@ import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 public class RoomResponseDTO {
 
 	private Long id;
-	private Integer number;
+	private Integer roomNumber;
 	private BigDecimal pricePerNight;
 	private String description;
 	private RoomStatus status;
@@ -20,7 +20,7 @@ public class RoomResponseDTO {
 
 	public RoomResponseDTO(Room room) {
 		this.id = room.getId();
-		this.number = room.getNumber();
+		this.roomNumber = room.getRoomNumber();
 		this.pricePerNight = room.getPricePerNight();
 		this.description = room.getDescription();
 		this.status = room.getStatus();
@@ -35,12 +35,12 @@ public class RoomResponseDTO {
 		this.id = id;
 	}
 
-	public Integer getNumber() {
-		return number;
+	public Integer getRoomNumber() {
+		return roomNumber;
 	}
 
-	public void setNumber(Integer number) {
-		this.number = number;
+	public void setRoomNumber(Integer roomNumber) {
+		this.roomNumber = roomNumber;
 	}
 
 	public BigDecimal getPricePerNight() {

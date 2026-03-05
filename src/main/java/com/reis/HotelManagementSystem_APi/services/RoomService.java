@@ -16,6 +16,7 @@ import com.reis.HotelManagementSystem_APi.entities.Room;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomStatus;
 import com.reis.HotelManagementSystem_APi.entities.enums.RoomType;
 import com.reis.HotelManagementSystem_APi.repositories.RoomRepository;
+import com.reis.HotelManagementSystem_APi.services.exceptions.ColumnConstraintException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.DatabaseException;
 import com.reis.HotelManagementSystem_APi.services.exceptions.ResourceNotFoundException;
 
@@ -85,7 +86,10 @@ public class RoomService {
 	
 	@Transactional
 	public RoomResponseDTO insert (RoomCreateDTO dto) {
-		Room obj = new Room(dto.getNumber(), dto.getPricePerNight().setScale(2, RoundingMode.HALF_EVEN), dto.getDescription(), dto.getStatus(), dto.getType());
+		if(repository.existsByRoomNumber(dto.getRoomNumber())) {
+			throw new ColumnConstraintException("Número do quarto já em uso");
+		}
+		Room obj = new Room(dto.getRoomNumber(), dto.getPricePerNight().setScale(2, RoundingMode.HALF_EVEN), dto.getDescription(), dto.getStatus(), dto.getType());
 		obj = repository.save(obj);
 		return new RoomResponseDTO(obj);
 	}
