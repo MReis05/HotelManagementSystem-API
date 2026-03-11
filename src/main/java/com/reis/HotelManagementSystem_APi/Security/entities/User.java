@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.reis.HotelManagementSystem_APi.Security.entities.enums.UserRole;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,7 @@ public class User implements UserDetails, Serializable {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
 	
+	@Column(unique = true)
 	private String login;
 	
 	private String password;
@@ -75,6 +77,26 @@ public class User implements UserDetails, Serializable {
 	@Override
 	public String getUsername() {
 		return login;
+	}
+	
+	@Override
+	public boolean isAccountNonExpired() {
+	    return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+	    return true; 
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+	    return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+	    return true;
 	}
 
 }
